@@ -568,9 +568,8 @@
             imageInput.click();
         });
 
-        // 壓縮與上傳對話圖片
-        imageInput.addEventListener("change", (e) => {
-            const file = e.target.files[0];
+        // 統一處理傳統選取與複製貼上的圖片壓縮、引用回覆、與上傳
+        async function handleImageUpload(file) {
             if (!file) return;
 
             if (!file.type.startsWith("image/")) {
@@ -616,7 +615,7 @@
                     } : {};
 
                     try {
-                        showToast("上傳處理中...");
+                        showToast("圖片上傳處理中...");
                         await addDoc(collection(db, "messages"), {
                             sender: nickname,
                             senderAvatar: currentAvatar,
@@ -637,6 +636,26 @@
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+        }
+
+        // 監聽傳統點擊按鈕選取檔案上傳
+        imageInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            handleImageUpload(file);
+        });
+
+        // 監聽並攔截對話輸入框的 Paste 事件，實現複製貼上傳送照片
+        messageInput.addEventListener("paste", (e) => {
+            const items = (e.clipboardData || window.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) {
+                        e.preventDefault(); // 阻止貼上預設的 base64 文字
+                        handleImageUpload(file);
+                    }
+                }
+            }
         });
 
         lightbox.addEventListener("click", () => {
