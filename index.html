@@ -60,6 +60,25 @@
             animation: reply-pulse 1.8s ease-out;
             border-radius: 24px;
         }
+
+        /* 搜尋關鍵字高亮樣式 */
+        mark.highlight {
+            background-color: #F7EAD7; /* 溫柔淡橘黃 */
+            color: #5C5246;
+            border-radius: 4px;
+            padding: 0 2px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        /* 當前聚焦的搜尋高亮項目 */
+        mark.highlight.current-focus {
+            background-color: #E88D67 !important; /* 顯眼的暖橘色 */
+            color: white !important;
+            box-shadow: 0 0 8px rgba(232, 141, 103, 0.6);
+            transform: scale(1.05);
+            display: inline-block;
+        }
     </style>
 </head>
 <body class="flex items-center justify-center p-0 md:p-4 overflow-hidden relative w-full h-full">
@@ -107,7 +126,7 @@
         <div class="space-y-4">
             <input type="text" id="username-input" class="w-full px-5 py-3.5 bg-[#FCFAF7] border border-[#FAF6F0] rounded-2xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] focus:ring-1 focus:ring-[#C5B3A1] transition duration-200" placeholder="怎麼稱呼您呢？" maxlength="15">
             <button id="login-btn" class="w-full py-3.5 bg-[#C5B3A1] hover:bg-[#B7A491] text-white font-medium rounded-2xl text-xs transition duration-300 shadow-sm shadow-[#C5B3A1]/10 active:scale-[0.98]">
-                進入
+                漫步進入
             </button>
         </div>
     </div>
@@ -145,9 +164,20 @@
         </div>
 
         <div id="search-bar-container" class="hidden px-5 py-2.5 bg-[#FCFAF7] border-b border-[#FAF6F0] flex items-center gap-2 transition-all duration-300 transform -translate-y-4 opacity-0 shrink-0">
-            <div class="relative flex-1">
+            <div class="relative flex-1 flex items-center">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#C5B3A1] text-xs"></i>
-                <input type="text" id="search-input" class="w-full pl-8 pr-4 py-2 bg-white border border-[#FAF6F0] rounded-xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] transition duration-200" placeholder="搜尋對話關鍵字..." autocomplete="off">
+                <input type="text" id="search-input" class="w-full pl-8 pr-28 py-2 bg-white border border-[#FAF6F0] rounded-xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] transition duration-200" placeholder="搜尋對話關鍵字..." autocomplete="off">
+                
+                <div id="search-controls" class="hidden absolute right-2 flex items-center gap-1 bg-[#FCFAF7] py-0.5 px-1.5 rounded-lg border border-[#FAF6F0]">
+                    <span id="search-index-info" class="text-[9px] text-[#A89C8F] font-semibold tracking-wider px-1">0 / 0</span>
+                    <div class="w-[1px] h-2.5 bg-[#EFEBE4]"></div>
+                    <button id="search-prev-btn" class="text-[#8C7E70] hover:text-[#5C4D3C] p-0.5 rounded transition active:scale-90" title="上一個">
+                        <i class="ph-bold ph-caret-up text-[10px]"></i>
+                    </button>
+                    <button id="search-next-btn" class="text-[#8C7E70] hover:text-[#5C4D3C] p-0.5 rounded transition active:scale-90" title="下一個">
+                        <i class="ph-bold ph-caret-down text-[10px]"></i>
+                    </button>
+                </div>
             </div>
             <button id="search-close" class="text-[10px] text-[#A89C8F] hover:text-[#8C7E70] px-1.5 py-1 font-medium transition duration-200">關閉</button>
         </div>
@@ -168,13 +198,10 @@
             </div>
         </div>
 
-                <!-- 表情面板 -->
         <div id="emoji-picker" class="hidden absolute bottom-24 left-4 md:left-6 z-30 bg-white border border-[#FAF6F0] p-3.5 rounded-2xl shadow-[0_12px_36px_rgba(180,170,160,0.12)] max-w-[290px] transition-all duration-300 opacity-0 scale-95 origin-bottom-left">
             <div class="text-[9px] text-[#A89C8F] mb-2 font-medium tracking-wide">挑選溫柔心情：</div>
-            <!-- 保持 7 欄，稍微拉高面板最大高度（220px），並支援平滑滾動 -->
             <div class="grid grid-cols-7 gap-1.5 text-lg max-h-[220px] overflow-y-auto pr-1">
                 
-                <!-- 【第一區：開心、撒嬌與熱情】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😊</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥰</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😍</button>
@@ -183,7 +210,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😋</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😜</button>
 
-                <!-- 【第二區：爆笑、調皮與耍帥】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😆</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤣</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😂</button>
@@ -192,7 +218,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😏</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥳</button>
 
-                <!-- 【第三區：思考、偷看與無奈】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤔</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫣</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤫</button>
@@ -201,7 +226,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤨</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😐</button>
 
-                <!-- 【第四區：尷尬、融化與傻眼】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😅</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥲</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫠</button>
@@ -210,7 +234,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😲</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤯</button>
 
-                <!-- 【第五區：無辜、難過與焦慮】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥺</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😭</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😢</button>
@@ -219,7 +242,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😱</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥱</button>
 
-                <!-- 【第六區：生氣、疲憊與傲嬌】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😠</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😡</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😤</button>
@@ -228,7 +250,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😇</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👀</button>
 
-                <!-- 【第七區：超實用互動手勢】 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👍</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👌</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">✌️</button>
@@ -239,7 +260,6 @@
 
             </div>
         </div>
-
 
         <div id="reply-preview-bar" class="hidden px-5 py-2 bg-[#FCFAF7] border-t border-[#FAF6F0] flex items-center justify-between gap-3 shrink-0">
             <div class="flex items-start gap-2 border-l-2 border-[#C5B3A1] pl-3 py-0.5 truncate flex-1">
@@ -339,6 +359,12 @@
         const selectedAvatarPreview = document.getElementById("selected-avatar-preview");
         const inputArea = document.getElementById("input-area");
 
+        // 搜尋功能核心變數
+        const searchControls = document.getElementById("search-controls");
+        const searchIndexInfo = document.getElementById("search-index-info");
+        const searchPrevBtn = document.getElementById("search-prev-btn");
+        const searchNextBtn = document.getElementById("search-next-btn");
+
         let nickname = "";
         let currentAvatar = "🧸";
         let allMessages = [];
@@ -346,6 +372,10 @@
         let replyToMsg = null;
         let isTyping = false;
         let typingTimeout = null;
+
+        // 搜尋切換定位陣列
+        let searchMatches = []; 
+        let currentSearchIndex = -1;
 
         // =======================================================
         // 🔥【iOS 鍵盤防檔 終極修正（Window 捲軸鎖定法）】
@@ -369,7 +399,6 @@
             const vt = window.visualViewport.offsetTop;
             const windowHeight = window.innerHeight;
 
-            // 1. 直接將容器「釘死」在視覺視區的最頂端，高度精確等於可見高度
             chatContainer.style.position = "fixed";
             chatContainer.style.left = "0px";
             chatContainer.style.top = `${vt}px`;
@@ -377,13 +406,9 @@
             chatContainer.style.height = `${vh}px`;
             chatContainer.style.borderRadius = "0px";
 
-            // 2. 判斷鍵盤彈起：如果當前高度比內視鏡高度小 120px 以上
             const isKeyboardOpen = (windowHeight - vh) > 120;
             if (isKeyboardOpen) {
-                // 額外加上 padding-bottom (墊高 28px) 確保完全衝破 iOS 完成列的遮擋
                 inputArea.style.paddingBottom = "28px";
-                
-                // 強制將歷史訊息滾動至最底
                 setTimeout(() => {
                     messageBox.scrollTop = messageBox.scrollHeight;
                 }, 50);
@@ -392,21 +417,17 @@
             }
         }
 
-        // 當輸入框聚焦時，徹底鎖死視窗滾動，禁止 iOS 發瘋式上移
         const forceScrollReset = () => {
             window.scrollTo(0, 0);
         };
 
-        // 註冊 Viewport 事件
         if (window.visualViewport) {
             window.visualViewport.addEventListener("resize", adjustLayoutForKeyboard);
             window.visualViewport.addEventListener("scroll", adjustLayoutForKeyboard);
         }
         window.addEventListener("resize", adjustLayoutForKeyboard);
 
-        // 綁定輸入框獲取/失去焦線事件
         messageInput.addEventListener("focus", () => {
-            // 點擊瞬間開始強推，每隔幾毫秒重新鎖死，防止 iOS 的滾動動畫偷跑
             let count = 0;
             const interval = setInterval(() => {
                 forceScrollReset();
@@ -422,7 +443,6 @@
             }, 100);
         });
 
-        // 攔截整個網頁的滾動事件，只要輸入框還在打字，網頁就必須留在頂部 (0,0)
         window.addEventListener("scroll", () => {
             if (document.activeElement === messageInput) {
                 forceScrollReset();
@@ -537,16 +557,84 @@
         function hideSearchBar() {
             searchInput.value = "";
             activeFilter = "";
+            searchMatches = [];
+            currentSearchIndex = -1;
+            searchControls.classList.add("hidden");
             renderMessageUI();
             searchBarContainer.classList.remove("translate-y-0", "opacity-100");
             searchBarContainer.classList.add("-translate-y-4", "opacity-0");
             setTimeout(() => searchBarContainer.classList.add("hidden"), 300);
         }
 
+        // =======================================================
+        // 🔍【搜尋並建立定位邏輯】
+        // =======================================================
         searchInput.addEventListener("input", (e) => {
             activeFilter = e.target.value.trim().toLowerCase();
-            renderMessageUI();
+            renderMessageUI(); // 先重新高亮渲染
+
+            if (!activeFilter) {
+                searchMatches = [];
+                currentSearchIndex = -1;
+                searchControls.classList.add("hidden");
+            } else {
+                // 抓取畫面上所有的 <mark.highlight> 元素
+                searchMatches = Array.from(document.querySelectorAll("mark.highlight"));
+                
+                if (searchMatches.length > 0) {
+                    currentSearchIndex = 0; // 預設跳到第 1 個
+                    searchControls.classList.remove("hidden");
+                    updateSearchUI();
+                    scrollToCurrentMatch();
+                } else {
+                    currentSearchIndex = -1;
+                    searchControls.classList.add("hidden");
+                }
+            }
         });
+
+        // 更新搜尋欄數字顯示 (例如: 1 / 8)
+        function updateSearchUI() {
+            if (searchMatches.length > 0) {
+                searchIndexInfo.textContent = `${currentSearchIndex + 1} / ${searchMatches.length}`;
+            } else {
+                searchIndexInfo.textContent = "0 / 0";
+            }
+        }
+
+        // 平滑滾動至目前聚焦的關鍵字，並高亮強調
+        function scrollToCurrentMatch() {
+            if (searchMatches.length === 0 || currentSearchIndex < 0) return;
+
+            // 移除所有匹配項的「正在聚焦」樣式
+            searchMatches.forEach(el => el.classList.remove("current-focus"));
+
+            const targetMark = searchMatches[currentSearchIndex];
+            targetMark.classList.add("current-focus");
+
+            // 平滑滾動到對話框中央
+            targetMark.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+
+        // 上一個 ▲ 按鈕
+        searchPrevBtn.addEventListener("click", () => {
+            if (searchMatches.length === 0) return;
+            currentSearchIndex = (currentSearchIndex === 0) ? searchMatches.length - 1 : currentSearchIndex - 1;
+            updateSearchUI();
+            scrollToCurrentMatch();
+        });
+
+        // 下一個 ▼ 按鈕
+        searchNextBtn.addEventListener("click", () => {
+            if (searchMatches.length === 0) return;
+            currentSearchIndex = (currentSearchIndex === searchMatches.length - 1) ? 0 : currentSearchIndex + 1;
+            updateSearchUI();
+            scrollToCurrentMatch();
+        });
+        // =======================================================
 
         messageBox.addEventListener("scroll", () => {
             const threshold = 200;
@@ -611,8 +699,7 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    // 🌟 1. 將最大寬高限制提升至 1400px (視網膜螢幕非常清晰)
-                    const MAX_DIM = 1400; 
+                    const MAX_DIM = 1400; // 1400px，視網膜高解析螢幕完美呈現
                     if (width > height) {
                         if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
                     } else {
@@ -622,14 +709,11 @@
                     canvas.height = height;
                     const ctx = canvas.getContext("2d");
                     
-                    // 啟用平滑縮放演算法，防止文字截圖縮小後產生毛邊
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = "high";
-                    
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // 🌟 2. 將畫質調高至 0.88，獲得極度清晰的文字和細節
-                    const base64Data = canvas.toDataURL("image/jpeg", 0.88);
+                    const base64Data = canvas.toDataURL("image/jpeg", 0.88); // 畫質提升至 88%，小字超清晰
                     const replyData = replyToMsg ? {
                         replyToId: replyToMsg.id,
                         replyToSender: replyToMsg.sender,
@@ -805,6 +889,12 @@
                 });
                 renderMessageUI();
                 markMessagesAsRead(allMessages);
+                
+                // 重新渲染後，如果有正處於搜尋狀態，也重新解析一次 matches 位置
+                if (activeFilter) {
+                    searchMatches = Array.from(document.querySelectorAll("mark.highlight"));
+                    updateSearchUI();
+                }
             });
             listenForTyping();
         }
@@ -858,21 +948,7 @@
 
         function renderMessageUI() {
             messageBox.innerHTML = "";
-            const displayedMessages = allMessages.filter(msg => {
-                if (!activeFilter) return true;
-                if (msg.isRecalled) return false;
-                if (msg.content && msg.content.toLowerCase().includes(activeFilter)) return true;
-                if (msg.sender && msg.sender.toLowerCase().includes(activeFilter)) return true;
-                return false;
-            });
-
-            if (displayedMessages.length === 0 && activeFilter) {
-                const emptyNotify = document.createElement("div");
-                emptyNotify.className = "text-center text-[10px] text-[#A89C8F] py-8 italic";
-                emptyNotify.textContent = `未搜尋到包含「${activeFilter}」的歷史紀錄。`;
-                messageBox.appendChild(emptyNotify);
-                return;
-            }
+            const displayedMessages = allMessages; // 不直接過濾訊息，而是把符合條件的高亮顯示，維持完整上下文
 
             displayedMessages.forEach((msg) => {
                 const isSelf = msg.sender === nickname;
@@ -900,7 +976,7 @@
                 nameLabel.className = "text-[9px] text-[#A89C8F] mb-0.5 px-2 font-medium flex items-center gap-1.5";
                 let displayName = msg.sender;
                 if (activeFilter && msg.sender.toLowerCase().includes(activeFilter)) {
-                    displayName = displayName.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="bg-[#FAF0E6] text-[#C5B3A1] rounded px-1 font-semibold">$1</mark>`);
+                    displayName = displayName.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="highlight">$1</mark>`);
                     nameLabel.innerHTML = displayName;
                 } else {
                     nameLabel.textContent = displayName;
@@ -974,8 +1050,10 @@
                     if (replyToWrapper) textBubble.appendChild(replyToWrapper);
                     const textContentSpan = document.createElement("span");
                     let displayContent = msg.content || "";
+                    
+                    // 若有搜尋關鍵字，高亮包裹它
                     if (activeFilter && displayContent.toLowerCase().includes(activeFilter)) {
-                        displayContent = displayContent.replace(new RegExp(`(${activeFilter})`, 'gi'), `<text class="bg-[#FAF0E6] text-[#C5B3A1] rounded px-0.5 font-medium">$1</text>`);
+                        displayContent = displayContent.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="highlight">$1</mark>`);
                         textContentSpan.innerHTML = displayContent;
                     } else {
                         textContentSpan.textContent = displayContent;
@@ -1031,9 +1109,12 @@
                 messageBox.appendChild(wrapper);
             });
 
-            setTimeout(() => {
-                messageBox.scrollTo({ top: messageBox.scrollHeight, behavior: 'smooth' });
-            }, 50);
+            // 只有在非搜尋模式下才自動滾到底部
+            if (!activeFilter) {
+                setTimeout(() => {
+                    messageBox.scrollTo({ top: messageBox.scrollHeight, behavior: 'smooth' });
+                }, 50);
+            }
         }
     </script>
 </body>
