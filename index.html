@@ -817,9 +817,22 @@
                 const bubbleContainer = document.createElement("div");
                 bubbleContainer.className = `flex items-end gap-1.5 max-w-full ${isSelf ? 'flex-row-reverse' : 'flex-row'}`;
 
-                // 渲染已讀/未讀標籤 (移至氣泡側邊，確保有足夠空隙不會被擠壓)
+                // 建立傳送時間標籤 (格式如 14:25)
+                const timeText = document.createElement("span");
+                timeText.className = "text-[9px] text-[#A89C8F]/60 select-none mb-1 shrink-0 font-medium";
+                let timeStr = "剛剛";
+                if (msg.timestamp) {
+                    const date = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
+                    const hours = String(date.getHours()).padStart(2, '0');
+                    const minutes = String(date.getMinutes()).padStart(2, '0');
+                    timeStr = `${hours}:${minutes}`;
+                }
+                timeText.textContent = timeStr;
+
+                // 建立已讀/未讀標籤
+                let statusText = null;
                 if (isSelf && !isRecalled) {
-                    const statusText = document.createElement("span");
+                    statusText = document.createElement("span");
                     statusText.className = "text-[9px] text-[#A89C8F]/50 select-none mb-1 shrink-0 font-medium";
                     
                     const readByArray = msg.readBy || [];
@@ -830,10 +843,21 @@
                     } else {
                         statusText.textContent = "未讀";
                     }
-                    bubbleContainer.appendChild(statusText);
                 }
 
-                bubbleContainer.appendChild(textBubble);
+                // 依據是否為發送者，控制 statusText, timeText, textBubble 的擺放順序
+                if (isSelf) {
+                    // flex-row-reverse 由右至左：[氣泡] [時間] [已讀狀態]
+                    bubbleContainer.appendChild(textBubble);
+                    bubbleContainer.appendChild(timeText);
+                    if (statusText) {
+                        bubbleContainer.appendChild(statusText);
+                    }
+                } else {
+                    // flex-row 由左至右：[氣泡] [時間]
+                    bubbleContainer.appendChild(textBubble);
+                    bubbleContainer.appendChild(timeText);
+                }
 
                 bubbleCol.appendChild(nameLabel);
                 bubbleCol.appendChild(bubbleContainer);
