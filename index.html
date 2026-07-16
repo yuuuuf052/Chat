@@ -2,8 +2,10 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
+    <!-- interactive-widget=resizes-content 告訴行動瀏覽器，鍵盤彈起時要重新調整視區大小，不要直接蓋上來 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, interactive-widget=resizes-content">
     <title>溫柔即時公共空間</title>
+    <!-- 匯入 Tailwind CSS 與字體 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -20,13 +22,13 @@
             height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* 鎖定全域，防止橡皮筋效果拉扯 */
-            position: fixed;  /* 防止 iOS 在鍵盤彈起時，整個 body 被往上推 */
+            overflow: hidden; 
+            /* 使用 fixed 定位防止 iOS 網頁整體被鍵盤拉扯變形 */
+            position: fixed;  
             left: 0;
             top: 0;
         }
 
-        /* 滾動條客製化 */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -37,8 +39,6 @@
         ::-webkit-scrollbar-thumb {
             background-color: rgba(197, 179, 161, 0.35);
             border-radius: 20px;
-            border: 1px solid transparent;
-            background-clip: padding-box;
         }
         img {
             -webkit-user-drag: none;
@@ -72,11 +72,13 @@
         <div class="absolute w-[450px] h-[450px] rounded-full bg-[#DFD3C3]/5 blur-[150px] -bottom-30 -right-20"></div>
     </div>
 
+    <!-- 頂部浮動通知 -->
     <div id="toast-notification" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#C5B3A1] text-white px-6 py-3 rounded-full shadow-[0_8px_24px_rgba(197,179,161,0.15)] flex items-center gap-2 transition-all duration-300 transform translate-y-[-100px] opacity-0 pointer-events-none">
         <i class="ph-bold ph-info text-sm"></i>
-        <span id="toast-message" class="text-xs font-medium tracking-wide">請輸入有效的名稱！</span>
+        <span id="toast-message" class="text-xs font-medium tracking-wide"></span>
     </div>
 
+    <!-- 圖片放大 Lightbox -->
     <div id="lightbox" class="hidden fixed inset-0 z-50 bg-[#3A332C]/30 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none cursor-zoom-out">
         <button id="lightbox-close" class="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl transition duration-200">
             <i class="ph-bold ph-x"></i>
@@ -84,6 +86,7 @@
         <img id="lightbox-img" class="max-w-full max-h-[85vh] rounded-[24px] shadow-2xl transition-transform duration-300 scale-95" src="" alt="放大預覽">
     </div>
 
+    <!-- 1. 登入介面 -->
     <div id="login-container" class="w-full max-w-md bg-white/90 backdrop-blur-lg border border-[#FBF9F6] p-6 md:p-8 rounded-[32px] shadow-[0_16px_48px_rgba(180,170,160,0.03)] text-center transition-all duration-500 z-10 mx-4 md:mx-0 max-h-[90vh] overflow-y-auto">
         <div class="w-12 h-12 bg-[#FBF9F6] text-[#C5B3A1] rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 shadow-inner">
             <i class="ph-bold ph-sparkle"></i>
@@ -103,9 +106,7 @@
             </div>
             <div class="flex items-center gap-2 mt-3 px-1">
                 <span class="text-[10px] text-[#A89C8F]">當前預覽：</span>
-                <div id="selected-avatar-preview" class="w-8 h-8 rounded-full border border-[#EFEBE4] flex items-center justify-center text-base overflow-hidden bg-white">
-                    🧸
-                </div>
+                <div id="selected-avatar-preview" class="w-8 h-8 rounded-full border border-[#EFEBE4] flex items-center justify-center text-base overflow-hidden bg-white">🧸</div>
             </div>
         </div>
 
@@ -117,8 +118,10 @@
         </div>
     </div>
 
+    <!-- 2. 聊天室主介面 -->
     <div id="chat-container" class="hidden absolute md:static w-full md:max-w-3xl bg-white/95 backdrop-blur-lg border-0 md:border border-[#FAF6F0] md:rounded-[32px] rounded-none shadow-[0_16px_48px_rgba(180,170,160,0.03)] flex flex-col overflow-hidden z-10 transition-all duration-300">
         
+        <!-- 頂部導航 -->
         <div id="chat-header" class="bg-white/90 border-b border-[#FAF6F0] px-5 py-3 flex justify-between items-center z-10 shrink-0">
             <div class="flex items-center gap-2.5">
                 <div class="w-8 h-8 bg-[#FCFAF7] text-[#C5B3A1] rounded-full flex items-center justify-center text-sm">
@@ -139,9 +142,7 @@
                 </button>
                 
                 <div id="current-user-tag" class="text-[10px] bg-[#FCFAF7] text-[#8C7E70] pl-1.5 pr-3 py-1 rounded-full font-medium flex items-center gap-1.5 border border-[#FAF6F0]">
-                    <div id="header-avatar-box" class="w-5 h-5 rounded-full bg-white border border-[#EFEBE4] overflow-hidden flex items-center justify-center text-xs">
-                        🧸
-                    </div>
+                    <div id="header-avatar-box" class="w-5 h-5 rounded-full bg-white border border-[#EFEBE4] overflow-hidden flex items-center justify-center text-xs">🧸</div>
                     <span class="truncate max-w-[80px]">未登入</span>
                 </div>
                 
@@ -151,23 +152,26 @@
             </div>
         </div>
 
+        <!-- 搜尋欄 -->
         <div id="search-bar-container" class="hidden px-5 py-2.5 bg-[#FCFAF7] border-b border-[#FAF6F0] flex items-center gap-2 transition-all duration-300 transform -translate-y-4 opacity-0 shrink-0">
             <div class="relative flex-1">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#C5B3A1] text-xs"></i>
                 <input type="text" id="search-input" class="w-full pl-8 pr-4 py-2 bg-white border border-[#FAF6F0] rounded-xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] transition duration-200" placeholder="搜尋對話關鍵字..." autocomplete="off">
             </div>
-            <button id="search-close" class="text-[10px] text-[#A89C8F] hover:text-[#8C7E70] px-1.5 py-1 font-medium transition duration-200">
-                關閉
-            </button>
+            <button id="search-close" class="text-[10px] text-[#A89C8F] hover:text-[#8C7E70] px-1.5 py-1 font-medium transition duration-200">關閉</button>
         </div>
 
+        <!-- 訊息區 -->
         <div id="message-box" class="flex-1 px-4 md:px-6 py-4 overflow-y-auto bg-[#FDFCFB]/40 flex flex-col gap-4 relative">
-            </div>
+            <!-- 訊息動態渲染 -->
+        </div>
 
+        <!-- 下滑按鈕 -->
         <button id="scroll-to-bottom-btn" class="absolute bottom-20 right-6 z-20 w-10 h-10 bg-[#C5B3A1]/90 hover:bg-[#B7A491] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(197,179,161,0.3)] transition-all duration-300 opacity-0 scale-90 translate-y-4 pointer-events-none">
             <i class="ph-bold ph-caret-double-down text-lg"></i>
         </button>
 
+        <!-- 輸入中狀態 -->
         <div id="typing-indicator" class="hidden absolute bottom-20 left-6 z-20 bg-white/95 backdrop-blur-md border border-[#FAF6F0] px-3.5 py-1.5 rounded-full shadow-[0_4px_16px_rgba(180,170,160,0.08)] flex items-center gap-1.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-none">
             <span id="typing-text" class="text-[10px] text-[#8C7E70] font-medium">有人正在輸入中</span>
             <div class="flex gap-1 items-center h-2 mt-0.5 pl-0.5">
@@ -177,6 +181,7 @@
             </div>
         </div>
 
+        <!-- 表情符號面板 -->
         <div id="emoji-picker" class="hidden absolute bottom-20 left-4 md:left-6 z-30 bg-white border border-[#FAF6F0] p-3 rounded-2xl shadow-[0_12px_36px_rgba(180,170,160,0.08)] max-w-[260px] transition-all duration-300 opacity-0 scale-95 origin-bottom-left">
             <div class="text-[9px] text-[#A89C8F] mb-1.5 font-medium tracking-wide">挑選溫柔心情：</div>
             <div class="grid grid-cols-6 gap-1.5 text-lg">
@@ -195,6 +200,7 @@
             </div>
         </div>
 
+        <!-- 回覆預覽列 -->
         <div id="reply-preview-bar" class="hidden px-5 py-2 bg-[#FCFAF7] border-t border-[#FAF6F0] flex items-center justify-between gap-3 shrink-0">
             <div class="flex items-start gap-2 border-l-2 border-[#C5B3A1] pl-3 py-0.5 truncate flex-1">
                 <div class="truncate">
@@ -209,6 +215,7 @@
             </button>
         </div>
 
+        <!-- 底部輸入區（此次修復最核心元素） -->
         <div id="input-area" class="p-3 md:p-4 bg-white border-t border-[#FAF6F0] flex items-center gap-2 relative shrink-0">
             <button id="emoji-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200">
                 <i class="ph-bold ph-smiley"></i>
@@ -227,6 +234,7 @@
         </div>
     </div>
 
+    <!-- Firebase 邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -258,7 +266,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // DOM 綁定
         const loginContainer = document.getElementById("login-container");
         const chatContainer = document.getElementById("chat-container");
         const usernameInput = document.getElementById("username-input");
@@ -292,6 +299,7 @@
         const avatarUploadTrigger = document.getElementById("avatar-upload-trigger");
         const avatarFileInput = document.getElementById("avatar-file-input");
         const selectedAvatarPreview = document.getElementById("selected-avatar-preview");
+        const inputArea = document.getElementById("input-area");
 
         let nickname = "";
         let currentAvatar = "🧸";
@@ -302,52 +310,72 @@
         let typingTimeout = null;
 
         // ==========================================
-        // 🔥【iOS 鍵盤防檔、防飄、防遮蓋核心優化】
+        // 🔥【iOS 鍵盤防檔、防遮蔽核心極限修正】
         // ==========================================
         function adjustLayoutForKeyboard() {
-            if (!window.visualViewport) return;
-            
-            // 取得當前真實虛擬視區的高與寬 (會扣除鍵盤、導航條、iOS 完成列)
-            const viewportHeight = window.visualViewport.height;
-            const viewportWidth = window.visualViewport.width;
-            const viewportTop = window.visualViewport.offsetTop;
-            
-            // 強制讓 chatContainer 貼齊當前虛擬視窗 (Visual Viewport)
-            if (window.innerWidth < 768) { // 行動端全螢幕
-                chatContainer.style.position = "fixed";
-                chatContainer.style.left = "0px";
-                chatContainer.style.top = `${viewportTop}px`;
-                chatContainer.style.width = `${viewportWidth}px`;
-                chatContainer.style.height = `${viewportHeight}px`;
-                chatContainer.style.borderRadius = "0px";
-            } else { // 桌面端保持預設
+            if (window.innerWidth >= 768) {
+                // 桌機端重置樣式，不受此邏輯干擾
                 chatContainer.style.position = "";
                 chatContainer.style.left = "";
                 chatContainer.style.top = "";
                 chatContainer.style.width = "";
                 chatContainer.style.height = "";
                 chatContainer.style.borderRadius = "";
+                inputArea.style.paddingBottom = "";
+                return;
             }
-            
-            // 每次視窗變動，防呆滾動到底部
-            if (nickname) {
-                messageBox.scrollTop = messageBox.scrollHeight;
+
+            if (!window.visualViewport) return;
+
+            const vh = window.visualViewport.height;
+            const vt = window.visualViewport.offsetTop;
+            const windowHeight = window.innerHeight;
+
+            // 1. 強制讓主容器高度等於當前「可見區域 (Visual Viewport)」高度
+            chatContainer.style.position = "fixed";
+            chatContainer.style.left = "0px";
+            chatContainer.style.top = `${vt}px`;
+            chatContainer.style.width = "100%";
+            chatContainer.style.height = `${vh}px`;
+            chatContainer.style.borderRadius = "0px";
+
+            // 2. 核心計算：如果可見高度比螢幕高度小很多 (代表鍵盤彈出了)
+            const isKeyboardOpen = (windowHeight - vh) > 150;
+            if (isKeyboardOpen) {
+                // 給底部輸入欄加上安全墊高，主動將它往上「頂」出 iOS 工具列的遮蓋範圍
+                inputArea.style.paddingBottom = "20px"; 
+                
+                // 強制讓對話視窗滾動到最底部
+                setTimeout(() => {
+                    messageBox.scrollTop = messageBox.scrollHeight;
+                }, 50);
+            } else {
+                // 鍵盤收起時回復乾淨邊距
+                inputArea.style.paddingBottom = "12px";
             }
         }
 
+        // 註冊 Viewport 監聽
         if (window.visualViewport) {
             window.visualViewport.addEventListener("resize", adjustLayoutForKeyboard);
             window.visualViewport.addEventListener("scroll", adjustLayoutForKeyboard);
         }
         window.addEventListener("resize", adjustLayoutForKeyboard);
 
-        // 當輸入框取得與失去焦點時，主動觸發調整，並確保滾動條不卡住
+        // 聚焦與失焦的主動觸發，並防止 iOS 頁面漂移
         messageInput.addEventListener("focus", () => {
-            setTimeout(adjustLayoutForKeyboard, 80);
+            setTimeout(() => {
+                adjustLayoutForKeyboard();
+                // 強制滾動輸入框到視野之內，防止被遮
+                messageInput.scrollIntoView({ block: "nearest", behavior: "smooth" });
+            }, 150);
         });
+
         messageInput.addEventListener("blur", () => {
-            setTimeout(adjustLayoutForKeyboard, 80);
-            window.scrollTo(0, 0); // 鍵盤收起時，重置 body 防止空白殘留
+            setTimeout(() => {
+                adjustLayoutForKeyboard();
+                window.scrollTo(0, 0); // 復原網頁彈跳位移
+            }, 100);
         });
         // ==========================================
 
@@ -394,9 +422,7 @@
                 } else {
                     await deleteDoc(typingRef);
                 }
-            } catch (error) {
-                console.error(error);
-            }
+            } catch (error) {}
         }
 
         messageInput.addEventListener("input", () => {
@@ -561,9 +587,7 @@
                         });
                         imageInput.value = "";
                         clearReply();
-                    } catch (error) {
-                        console.error(error);
-                    }
+                    } catch (error) {}
                 };
                 img.src = event.target.result;
             };
@@ -701,9 +725,7 @@
                 });
                 messageInput.value = "";
                 clearReply();
-            } catch (error) {
-                console.error(error);
-            }
+            } catch (error) {}
         }
 
         sendBtn.addEventListener("click", sendMessage);
@@ -888,7 +910,7 @@
                     const textContentSpan = document.createElement("span");
                     let displayContent = msg.content || "";
                     if (activeFilter && displayContent.toLowerCase().includes(activeFilter)) {
-                        displayContent = displayContent.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="bg-[#FAF0E6] text-[#C5B3A1] rounded px-0.5 font-medium">$1</mark>`);
+                        displayContent = displayContent.replace(new RegExp(`(${activeFilter})`, 'gi'), `<text class="bg-[#FAF0E6] text-[#C5B3A1] rounded px-0.5 font-medium">$1</text>`);
                         textContentSpan.innerHTML = displayContent;
                     } else {
                         textContentSpan.textContent = displayContent;
