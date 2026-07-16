@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>溫柔即時</title>
+    <!-- 匯入 Tailwind CSS 與優雅無襯線字體 Inter / 繁中 Noto Sans -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- 匯入 Phosphor Icons 溫和流線型圖標庫 -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(250, 246, 240, 1) 0%, rgba(243, 235, 224, 1) 90.1%);
+        }
+        /* 訂製訊息捲軸樣式，使其更精緻優雅 */
+        #message-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        #message-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #message-box::-webkit-scrollbar-thumb {
+            background-color: rgba(192, 140, 115, 0.2);
+            border-radius: 20px;
+        }
+        #message-box::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(192, 140, 115, 0.4);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 overflow-hidden relative">
+
+    <!-- 氛圍暖光球裝飾 (增加畫面層次感) -->
+    <div class="absolute w-[300px] h-[300px] rounded-full bg-[#EAD8C3]/30 blur-3xl -top-12 -left-12 pointer-events-none"></div>
+    <div class="absolute w-[400px] h-[400px] rounded-full bg-[#DFD3C3]/20 blur-3xl -bottom-20 -right-20 pointer-events-none"></div>
+
+    <!-- 精美客製化彈出式提示通知 (取代傳統的 alert) -->
+    <div id="toast-notification" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#C2735A] text-white px-6 py-3.5 rounded-full shadow-lg flex items-center gap-2.5 transition-all duration-300 transform translate-y-[-100px] opacity-0 pointer-events-none">
+        <i class="ph-bold ph-info text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">請輸入有效的名稱！</span>
+    </div>
+
+    <!-- 圖片放大 Lightbox 預覽 -->
+    <div id="lightbox" class="hidden fixed inset-0 z-50 bg-[#4A3D31]/80 backdrop-blur-sm flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none cursor-zoom-out">
+        <button id="lightbox-close" class="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-2xl transition duration-200">
+            <i class="ph-bold ph-x"></i>
+        </button>
+        <img id="lightbox-img" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl transition-transform duration-300 scale-95" src="" alt="放大預覽">
+    </div>
+
+    <!-- 1. 溫柔燕麥登入介面 -->
+    <div id="login-container" class="w-full max-w-md bg-white/95 backdrop-blur-md border border-[#F5EFE6] p-8 rounded-[32px] shadow-[0_12px_40px_rgba(142,128,113,0.08)] text-center transition-all duration-500 z-10">
+        <div class="w-16 h-16 bg-[#FAF3EC] text-[#C08C73] rounded-3xl mx-auto flex items-center justify-center text-3xl mb-5 shadow-inner">
+            <i class="ph-bold ph-chats-teardrop"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-[#4A3D31] mb-2 tracking-wide">公共空間</h2>
+        <p class="text-xs text-[#8E8071] mb-8 leading-relaxed">微風流淌的無壓力角落。給自己一個名字，隨時與這裡的人溫暖對話。</p>
+        
+        <div class="space-y-4">
+            <div class="relative">
+                <input type="text" id="username-input" class="w-full pl-5 pr-5 py-4 bg-[#FAF8F5] border border-[#F0E6D8] rounded-2xl text-sm text-[#4A3D31] placeholder-[#A09383] focus:outline-none focus:border-[#C08C73] focus:ring-1 focus:ring-[#C08C73] transition duration-200" placeholder="怎麼稱呼您呢？" maxlength="15">
+            </div>
+            <button id="login-btn" class="w-full py-4 bg-[#C08C73] hover:bg-[#B07C63] text-white font-medium rounded-2xl text-sm transition duration-300 shadow-md shadow-[#C08C73]/20 hover:shadow-lg active:scale-[0.98]">
+                漫步進入
+            </button>
+        </div>
+        <div class="mt-6">
+            <span class="text-[10px] text-[#A69B8F] tracking-widest uppercase">免註冊安全通訊</span>
+        </div>
+    </div>
+
+    <!-- 2. 燕麥奶油風聊天室主介面 (預設隱藏) -->
+    <div id="chat-container" class="hidden w-full max-w-2xl h-[88vh] bg-white/95 backdrop-blur-md border border-[#F5EFE6] rounded-[32px] shadow-[0_16px_50px_rgba(142,128,113,0.1)] flex-col overflow-hidden z-10 transition-all duration-500">
+        <!-- 頂部標頭列 -->
+        <div id="chat-header" class="bg-white/80 border-b border-[#F5EFE6] px-6 py-4 flex justify-between items-center z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#FAF3EC] text-[#C08C73] rounded-full flex items-center justify-center text-lg">
+                    <i class="ph-bold ph-sparkle"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-[#4A3D31] text-base tracking-wide">公共空間</h3>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 bg-[#A3B899] rounded-full animate-pulse"></span>
+                        <span class="text-xs text-[#8E8071]">即時連線中</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 右上角目前暱稱與工具按鈕 -->
+            <div class="flex items-center gap-2">
+                <!-- 查詢歷史紀錄按鈕 -->
+                <button id="search-trigger" class="w-8 h-8 rounded-full bg-[#FAF5EE] hover:bg-[#FAF3EC] border border-[#F2ECE0] text-[#A08875] flex items-center justify-center transition duration-200" title="搜尋對話紀錄">
+                    <i class="ph-bold ph-magnifying-glass text-sm"></i>
+                </button>
+                <div id="current-user-tag" class="text-xs bg-[#FAF5EE] text-[#A08875] px-3 py-2 rounded-full font-medium flex items-center gap-1.5 border border-[#F2ECE0]">
+                    <i class="ph-bold ph-smiley-wink"></i>
+                    <span>未登入</span>
+                </div>
+                <!-- 登出 / 變更姓名按鈕 -->
+                <button id="logout-btn" class="w-8 h-8 rounded-full bg-[#FAF5EE] hover:bg-[#FAF3EC] border border-[#F2ECE0] text-[#A08875] hover:text-[#C2735A] flex items-center justify-center transition duration-200" title="登出 / 切換暱稱">
+                    <i class="ph-bold ph-sign-out text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 查詢紀錄滑出輸入條 -->
+        <div id="search-bar-container" class="hidden px-6 py-3 bg-[#FAF8F5] border-b border-[#F5EFE6] flex items-center gap-2 transition-all duration-300 transform -translate-y-4 opacity-0">
+            <div class="relative flex-1">
+                <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A09383]"></i>
+                <input type="text" id="search-input" class="w-full pl-9 pr-4 py-2.5 bg-white border border-[#F0E6D8] rounded-xl text-xs text-[#4A3D31] placeholder-[#A09383] focus:outline-none focus:border-[#C08C73] transition duration-200" placeholder="搜尋關鍵字紀錄..." autocomplete="off">
+            </div>
+            <button id="search-close" class="text-xs text-[#8E8071] hover:text-[#C2735A] px-2 py-1 font-medium transition duration-200">
+                關閉搜尋
+            </button>
+        </div>
+
+        <!-- 訊息對話區 -->
+        <div id="message-box" class="flex-1 p-6 overflow-y-auto bg-[#FBF9F6]/50 flex flex-col gap-4">
+            <!-- 訊息將由 JavaScript 即時渲染 -->
+        </div>
+
+        <!-- 貼心表情符號面板 (Emoji Picker) - 預設隱藏且有微動效 -->
+        <div id="emoji-picker" class="hidden absolute bottom-24 left-6 z-30 bg-white border border-[#F2ECE0] p-4 rounded-2xl shadow-xl max-w-[280px] transition-all duration-300 opacity-0 scale-95 origin-bottom-left">
+            <div class="text-[10px] text-[#A08875] mb-2 font-medium tracking-wide">挑選溫柔心境：</div>
+            <div class="grid grid-cols-6 gap-2 text-xl">
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">😊</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🥰</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">✨</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🧸</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">☁️</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🧁</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">☘️</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">☕</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🐱</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">💌</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">💡</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🌿</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">😀</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🤗</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">😶‍🌫️</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🫩</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🥲</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">👀</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🤦‍♀️</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">🫠</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">💩</button>
+                <button class="emoji-btn hover:bg-[#FAF3EC] p-1.5 rounded-lg transition">😤</button>
+            
+            </div>
+        </div>
+
+        <!-- 底部輸入與發送欄 -->
+        <div id="input-area" class="p-4 bg-white border-t border-[#F5EFE6] flex items-center gap-2.5 relative">
+            <!-- 表情符號彈出按鈕 -->
+            <button id="emoji-trigger" class="w-11 h-11 bg-[#FAF8F5] hover:bg-[#FAF3EC] text-[#A08875] border border-[#F2ECE0] rounded-2xl flex items-center justify-center text-xl transition duration-200" title="插入表情符號">
+                <i class="ph-bold ph-smiley"></i>
+            </button>
+            
+            <!-- 圖片上傳按鈕 -->
+            <button id="image-trigger" class="w-11 h-11 bg-[#FAF8F5] hover:bg-[#FAF3EC] text-[#A08875] border border-[#F2ECE0] rounded-2xl flex items-center justify-center text-xl transition duration-200" title="上傳圖片">
+                <i class="ph-bold ph-image"></i>
+            </button>
+            <input type="file" id="image-input" class="hidden" accept="image/*">
+
+            <input type="text" id="message-input" class="flex-1 py-3 px-5 bg-[#FAF8F5] border border-[#F0E6D8] rounded-2xl text-sm text-[#4A3D31] placeholder-[#A09383] focus:outline-none focus:border-[#C08C73] transition duration-200" placeholder="說點溫柔的話吧..." autocomplete="off">
+            
+            <button id="send-btn" class="w-11 h-11 bg-[#C08C73] hover:bg-[#B07C63] text-white rounded-2xl flex items-center justify-center transition duration-200 shadow-md shadow-[#C08C73]/10 hover:shadow-[#C08C73]/20 active:scale-95">
+                <i class="ph-bold ph-paper-plane-right text-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 載入 Firebase Web SDK (v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            query, 
+            orderBy, 
+            limit, 
+            onSnapshot, 
+            serverTimestamp,
+            doc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // ================= 使用您在 image_797d02.png 截圖中的專屬參數 =================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCS9qKnVEYjRzKOXOb3u2gQej1Pc1qJr1c",
+            authDomain: "my-simple-chat-50e3e.firebaseapp.com",
+            projectId: "my-simple-chat-50e3e",
+            storageBucket: "my-simple-chat-50e3e.firebasestorage.app",
+            messagingSenderId: "98528300481",
+            appId: "1:98528300481:web:d816e74665facef2113340",
+            measurementId: "G-CHXE28LVYD"
+        };
+        // =========================================================================
+
+        // 初始化 Firebase 與 Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 綁定頁面 DOM 元素
+        const loginContainer = document.getElementById("login-container");
+        const chatContainer = document.getElementById("chat-container");
+        const usernameInput = document.getElementById("username-input");
+        const loginBtn = document.getElementById("login-btn");
+        const currentUserTag = document.getElementById("current-user-tag");
+        const logoutBtn = document.getElementById("logout-btn");
+        const messageBox = document.getElementById("message-box");
+        const messageInput = document.getElementById("message-input");
+        const sendBtn = document.getElementById("send-btn");
+        const emojiTrigger = document.getElementById("emoji-trigger");
+        const emojiPicker = document.getElementById("emoji-picker");
+        const toastNotification = document.getElementById("toast-notification");
+        const toastMessage = document.getElementById("toast-message");
+
+        // 搜尋欄與圖片上傳綁定
+        const searchTrigger = document.getElementById("search-trigger");
+        const searchBarContainer = document.getElementById("search-bar-container");
+        const searchInput = document.getElementById("search-input");
+        const searchClose = document.getElementById("search-close");
+        const imageTrigger = document.getElementById("image-trigger");
+        const imageInput = document.getElementById("image-input");
+
+        // Lightbox 放大相關元素
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxClose = document.getElementById("lightbox-close");
+
+        // 全域變數追蹤
+        let nickname = "";
+        let allMessages = []; // 用於在前端實現超高效搜尋
+        let activeFilter = ""; // 現行的關鍵字過濾
+
+        function showToast(msg) {
+            toastMessage.textContent = msg;
+            toastNotification.classList.remove("translate-y-[-100px]", "opacity-0", "pointer-events-none");
+            toastNotification.classList.add("translate-y-0", "opacity-100");
+            
+            setTimeout(() => {
+                toastNotification.classList.add("translate-y-[-100px]", "opacity-0", "pointer-events-none");
+                toastNotification.classList.remove("translate-y-0", "opacity-100");
+            }, 3000);
+        }
+
+        // 控制搜尋欄的顯示與隱藏
+        searchTrigger.addEventListener("click", () => {
+            if (searchBarContainer.classList.contains("hidden")) {
+                searchBarContainer.classList.remove("hidden");
+                setTimeout(() => {
+                    searchBarContainer.classList.remove("-translate-y-4", "opacity-0");
+                    searchBarContainer.classList.add("translate-y-0", "opacity-100");
+                    searchInput.focus();
+                }, 10);
+            } else {
+                hideSearchBar();
+            }
+        });
+
+        searchClose.addEventListener("click", () => {
+            hideSearchBar();
+        });
+
+        function hideSearchBar() {
+            searchInput.value = "";
+            activeFilter = "";
+            renderMessageUI(); // 恢復渲染完整列表
+            searchBarContainer.classList.remove("translate-y-0", "opacity-100");
+            searchBarContainer.classList.add("-translate-y-4", "opacity-0");
+            setTimeout(() => {
+                searchBarContainer.classList.add("hidden");
+            }, 300);
+        }
+
+        // 即時搜尋輸入監聽
+        searchInput.addEventListener("input", (e) => {
+            activeFilter = e.target.value.trim().toLowerCase();
+            renderMessageUI();
+        });
+
+        // 表情符號面板控制
+        emojiTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (emojiPicker.classList.contains("hidden")) {
+                emojiPicker.classList.remove("hidden");
+                setTimeout(() => {
+                    emojiPicker.classList.remove("opacity-0", "scale-95");
+                    emojiPicker.classList.add("opacity-100", "scale-100");
+                }, 10);
+            } else {
+                closeEmojiPicker();
+            }
+        });
+
+        function closeEmojiPicker() {
+            emojiPicker.classList.remove("opacity-100", "scale-100");
+            emojiPicker.classList.add("opacity-0", "scale-95");
+            setTimeout(() => {
+                emojiPicker.classList.add("hidden");
+            }, 300);
+        }
+
+        document.querySelectorAll(".emoji-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                messageInput.value += btn.textContent;
+                messageInput.focus();
+                closeEmojiPicker();
+            });
+        });
+
+        document.addEventListener("click", () => {
+            if (!emojiPicker.classList.contains("hidden")) {
+                closeEmojiPicker();
+            }
+        });
+
+        // 觸發隱藏的 File Input 點擊
+        imageTrigger.addEventListener("click", () => {
+            imageInput.click();
+        });
+
+        // 圖片上傳異步處理 (壓縮並上傳)
+        imageInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith("image/")) {
+                showToast("這似乎不是合法的圖片檔案！");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = async function() {
+                    // 使用 Canvas 進行縮放壓縮，避免直傳過大 Base64 到 Firestore
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+
+                    const MAX_DIM = 600; // 最大寬高縮小到 600px 內，優化載入效能
+                    if (width > height) {
+                        if (width > MAX_DIM) {
+                            height *= MAX_DIM / width;
+                            width = MAX_DIM;
+                        }
+                    } else {
+                        if (height > MAX_DIM) {
+                            width *= MAX_DIM / height;
+                            height = MAX_DIM;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx = canvas.getContext("2d");
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // 壓縮轉為 JPEG，品質為 0.65，控制在極小體積內
+                    const base64Data = canvas.toDataURL("image/jpeg", 0.65);
+
+                    try {
+                        showToast("圖片上傳處理中...");
+                        await addDoc(collection(db, "messages"), {
+                            sender: nickname,
+                            content: "",
+                            image: base64Data,
+                            timestamp: serverTimestamp(),
+                            isRecalled: false
+                        });
+                        imageInput.value = ""; // 重設選取狀態
+                    } catch (error) {
+                        console.error("圖片傳送失敗：", error);
+                        showToast("傳送圖片失敗，請檢查網路！");
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Lightbox 放大視窗控制
+        lightbox.addEventListener("click", () => {
+            lightbox.classList.remove("opacity-100");
+            lightboxImg.classList.remove("scale-100");
+            lightboxImg.classList.add("scale-95");
+            setTimeout(() => {
+                lightbox.classList.add("hidden");
+            }, 300);
+        });
+
+        function openLightbox(src) {
+            lightboxImg.src = src;
+            lightbox.classList.remove("hidden");
+            setTimeout(() => {
+                lightbox.classList.remove("opacity-0", "pointer-events-none");
+                lightboxImg.classList.remove("scale-95");
+                lightboxImg.classList.add("scale-100");
+            }, 10);
+        }
+
+        // 自動登入：檢查瀏覽器中是否已有儲存的暱稱
+        const savedNickname = localStorage.getItem("chat_nickname");
+        if (savedNickname) {
+            nickname = savedNickname;
+            currentUserTag.querySelector("span").textContent = nickname;
+            loginContainer.classList.add("hidden");
+            chatContainer.classList.remove("hidden");
+            chatContainer.classList.add("flex");
+            listenForMessages();
+        }
+
+        loginBtn.addEventListener("click", joinChat);
+        usernameInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") joinChat();
+        });
+
+        function joinChat() {
+            const name = usernameInput.value.trim();
+            if (!name) {
+                showToast("請輸入一個您喜歡的名字！");
+                return;
+            }
+            
+            nickname = name;
+            localStorage.setItem("chat_nickname", nickname);
+            currentUserTag.querySelector("span").textContent = nickname;
+            
+            loginContainer.style.opacity = "0";
+            setTimeout(() => {
+                loginContainer.classList.add("hidden");
+                chatContainer.classList.remove("hidden");
+                chatContainer.classList.add("flex");
+                listenForMessages();
+            }, 300);
+        }
+
+        logoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("chat_nickname");
+            nickname = "";
+            usernameInput.value = "";
+            loginContainer.style.opacity = "1";
+            loginContainer.classList.remove("hidden");
+            chatContainer.classList.add("hidden");
+            chatContainer.classList.remove("flex");
+        });
+
+        // 發送文字訊息至雲端資料庫 Firestore
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            try {
+                await addDoc(collection(db, "messages"), {
+                    sender: nickname,
+                    content: text,
+                    image: "",
+                    timestamp: serverTimestamp(),
+                    isRecalled: false
+                });
+                messageInput.value = "";
+            } catch (error) {
+                console.error("發送失敗：", error);
+                showToast("連線好像有點不穩，請再試一次！");
+            }
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        // 即時監聽資料庫變化並快取在本地端
+        function listenForMessages() {
+            const q = query(
+                collection(db, "messages"), 
+                orderBy("timestamp", "asc"), 
+                limit(100)
+            );
+
+            onSnapshot(q, (snapshot) => {
+                allMessages = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allMessages.push({
+                        id: doc.id,
+                        ...data
+                    });
+                });
+                renderMessageUI();
+            }, (error) => {
+                console.error("Firestore 連線中斷：", error);
+                showToast("連線異常，正在嘗試重連...");
+            });
+        }
+
+        // 收回訊息的資料庫更新
+        async function recallMessage(messageId) {
+            try {
+                const messageRef = doc(db, "messages", messageId);
+                await updateDoc(messageRef, {
+                    isRecalled: true
+                });
+                showToast("訊息已成功收回。");
+            } catch (error) {
+                console.error("收回失敗：", error);
+                showToast("訊息收回失敗，請再試一次。");
+            }
+        }
+
+        // 渲染對話介面 (支援關鍵字快取搜尋)
+        function renderMessageUI() {
+            messageBox.innerHTML = ""; // 清空畫面
+
+            // 進行對話紀錄過濾
+            const displayedMessages = allMessages.filter(msg => {
+                if (!activeFilter) return true;
+                // 如果有啟用關鍵字查詢
+                if (msg.isRecalled) return false; // 收回的訊息不參與搜尋
+                if (msg.content && msg.content.toLowerCase().includes(activeFilter)) return true;
+                if (msg.sender && msg.sender.toLowerCase().includes(activeFilter)) return true;
+                return false;
+            });
+
+            if (displayedMessages.length === 0 && activeFilter) {
+                const emptyNotify = document.createElement("div");
+                emptyNotify.className = "text-center text-xs text-[#A08875] py-10 italic";
+                emptyNotify.textContent = `沒有找到包含「${activeFilter}」的歷史紀錄。`;
+                messageBox.appendChild(emptyNotify);
+                return;
+            }
+
+            displayedMessages.forEach((msg) => {
+                const isSelf = msg.sender === nickname;
+                const isRecalled = msg.isRecalled === true;
+
+                // 外層容器 (負責左/右對齊)
+                const row = document.createElement("div");
+                row.className = `flex flex-col max-w-[75%] ${isSelf ? 'self-end items-end' : 'self-start items-start'} group relative`;
+
+                // 暱稱與動作列標籤
+                const nameLabel = document.createElement("div");
+                nameLabel.className = "text-[10px] text-[#A08875] mb-1 px-1 font-medium flex items-center gap-1.5";
+                
+                // 處理搜尋時 sender 的高亮
+                let displayName = msg.sender;
+                if (activeFilter && msg.sender.toLowerCase().includes(activeFilter)) {
+                    displayName = displayName.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="bg-[#EAD8C3] text-[#4A3D31] rounded px-1 font-semibold">$1</mark>`);
+                    nameLabel.innerHTML = displayName;
+                } else {
+                    nameLabel.textContent = displayName;
+                }
+
+                // 如果是自己發出的訊息且尚未收回，添加「收回」按鈕
+                if (isSelf && !isRecalled) {
+                    const recallBtn = document.createElement("button");
+                    recallBtn.className = "text-[#C2735A] hover:text-red-700 ml-2 text-[9px] transition opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer flex items-center gap-0.5";
+                    recallBtn.innerHTML = `<i class="ph ph-arrow-u-up-left"></i> 收回`;
+                    recallBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        recallMessage(msg.id);
+                    });
+                    nameLabel.appendChild(recallBtn);
+                }
+
+                // 對話泡泡
+                const textBubble = document.createElement("div");
+                
+                if (isRecalled) {
+                    // 已收回狀態
+                    textBubble.className = `px-4.5 py-3 rounded-2.5xl text-xs leading-relaxed border italic text-stone-400 bg-stone-100/70 border-stone-200 ${
+                        isSelf ? 'rounded-tr-none' : 'rounded-tl-none'
+                    }`;
+                    textBubble.innerHTML = `<i class="ph ph-warning-circle inline mr-1"></i>此訊息已被收回`;
+                } else if (msg.image) {
+                    // 圖片訊息狀態
+                    textBubble.className = `p-1 rounded-2.5xl shadow-[0_2px_8px_rgba(142,128,113,0.03)] border cursor-zoom-in overflow-hidden max-w-full ${
+                        isSelf ? 'bg-[#C08C73] border-[#B37E65] rounded-tr-none' : 'bg-white border-[#F2ECE0] rounded-tl-none'
+                    }`;
+                    
+                    const imgEl = document.createElement("img");
+                    imgEl.src = msg.image;
+                    imgEl.className = "rounded-[18px] max-w-[240px] max-h-[180px] object-cover transition-transform hover:scale-[1.02] duration-200";
+                    imgEl.addEventListener("click", () => {
+                        openLightbox(msg.image);
+                    });
+                    textBubble.appendChild(imgEl);
+                } else {
+                    // 一般文字訊息狀態
+                    textBubble.className = `px-4.5 py-3 rounded-2.5xl text-[14.5px] leading-relaxed break-all shadow-[0_2px_8px_rgba(142,128,113,0.03)] border ${
+                        isSelf 
+                            ? 'bg-[#C08C73] text-white border-[#B37E65] rounded-tr-none' 
+                            : 'bg-white text-[#4A3D31] border-[#F2ECE0] rounded-tl-none'
+                    }`;
+
+                    let displayContent = msg.content || "";
+                    if (activeFilter && displayContent.toLowerCase().includes(activeFilter)) {
+                        // 在對話文字中高亮搜尋關鍵字
+                        displayContent = displayContent.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="bg-[#F5EFE6] text-[#C2735A] rounded px-1 font-semibold">$1</mark>`);
+                        textBubble.innerHTML = displayContent;
+                    } else {
+                        textBubble.textContent = displayContent;
+                    }
+                }
+
+                row.appendChild(nameLabel);
+                row.appendChild(textBubble);
+                messageBox.appendChild(row);
+            });
+
+            // 搜尋完成時或非搜尋中，平滑自動向下滾動
+            setTimeout(() => {
+                messageBox.scrollTo({
+                    top: messageBox.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
+        }
+    </script>
+</body>
+</html>
