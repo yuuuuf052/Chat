@@ -293,7 +293,7 @@
         let typingTimeout = null;
 
         // =======================================================
-        // 🔥【iOS 鍵盤防檔 終極無敵修正（Window 捲軸鎖定法）】
+        // 🔥【iOS 鍵盤防檔 終極修正（Window 捲軸鎖定法）】
         // =======================================================
         function adjustLayoutForKeyboard() {
             if (window.innerWidth >= 768) {
@@ -543,6 +543,9 @@
 
         imageTrigger.addEventListener("click", () => imageInput.click());
 
+        // =======================================================
+        // 📸【圖片高畫質壓縮發送邏輯】
+        // =======================================================
         async function handleImageUpload(file) {
             if (!file || !file.type.startsWith("image/")) return;
             const reader = new FileReader();
@@ -552,7 +555,9 @@
                     const canvas = document.createElement("canvas");
                     let width = img.width;
                     let height = img.height;
-                    const MAX_DIM = 600;
+                    
+                    // 🌟 1. 將最大寬高限制提升至 1400px (視網膜螢幕非常清晰)
+                    const MAX_DIM = 1400; 
                     if (width > height) {
                         if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
                     } else {
@@ -561,8 +566,15 @@
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext("2d");
+                    
+                    // 啟用平滑縮放演算法，防止文字截圖縮小後產生毛邊
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    
                     ctx.drawImage(img, 0, 0, width, height);
-                    const base64Data = canvas.toDataURL("image/jpeg", 0.65);
+                    
+                    // 🌟 2. 將畫質調高至 0.88，獲得極度清晰的文字和細節
+                    const base64Data = canvas.toDataURL("image/jpeg", 0.88);
                     const replyData = replyToMsg ? {
                         replyToId: replyToMsg.id,
                         replyToSender: replyToMsg.sender,
@@ -583,7 +595,9 @@
                         });
                         imageInput.value = "";
                         clearReply();
-                    } catch (error) {}
+                    } catch (error) {
+                        showToast("發送失敗，請再試一次");
+                    }
                 };
                 img.src = event.target.result;
             };
