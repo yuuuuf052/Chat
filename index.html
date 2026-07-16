@@ -16,19 +16,22 @@
             background: radial-gradient(circle at 10% 20%, rgba(255, 254, 252, 1) 0%, rgba(252, 249, 245, 1) 100%);
             -webkit-tap-highlight-color: transparent;
         }
-        /* 精緻極輕捲軸樣式 */
-        #message-box::-webkit-scrollbar {
-            width: 4px;
+        /* 全域客製化溫柔極輕拉桿樣式，解決低螢幕高度無法下滑問題 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
-        #message-box::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: transparent;
         }
-        #message-box::-webkit-scrollbar-thumb {
-            background-color: rgba(214, 197, 179, 0.15);
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(197, 179, 161, 0.35);
             border-radius: 20px;
+            border: 1px solid transparent;
+            background-clip: padding-box;
         }
-        #message-box::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(214, 197, 179, 0.3);
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(197, 179, 161, 0.6);
         }
         /* 避免圖片在燈箱預覽中被選取 */
         img {
@@ -36,7 +39,7 @@
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-[100dvh] p-0 md:p-4 overflow-hidden relative">
+<body class="flex items-center justify-center min-h-[100dvh] p-0 md:p-4 overflow-y-auto overflow-x-hidden relative">
 
     <!-- 氛圍柔焦暖光球裝飾 (大幅降低明度與飽和度，營造安靜、無干擾的極簡感) -->
     <div class="absolute w-[350px] h-[350px] rounded-full bg-[#EAD8C3]/5 blur-[120px] -top-20 -left-20 pointer-events-none"></div>
