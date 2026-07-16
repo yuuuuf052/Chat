@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, interactive-widget=resizes-content">
     <title>溫柔即時公共空間</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -17,13 +17,16 @@
         
         html, body {
             width: 100%;
-            height: 100dvh; /* 使用動態視窗高度，鍵盤彈起時會自動縮小，絕不坍塌 */
+            height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* 鎖定全域，防止整體頁面被橡皮筋效果拉扯 */
+            overflow: hidden; /* 鎖定全域，防止橡皮筋效果拉扯 */
+            position: fixed;  /* 防止 iOS 在鍵盤彈起時，整個 body 被往上推 */
+            left: 0;
+            top: 0;
         }
 
-        /* 全域客製化溫柔極輕拉桿樣式 */
+        /* 滾動條客製化 */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -37,14 +40,10 @@
             border: 1px solid transparent;
             background-clip: padding-box;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(197, 179, 161, 0.6);
-        }
         img {
             -webkit-user-drag: none;
         }
         
-        /* 對方打字中的三點彈跳動畫 */
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-4px); }
@@ -55,7 +54,6 @@
         .dot-bounce:nth-child(2) { animation-delay: 0.2s; }
         .dot-bounce:nth-child(3) { animation-delay: 0.4s; }
 
-        /* 回覆原訊息時的溫柔燕麥高亮動畫 */
         @keyframes reply-pulse {
             0% { background-color: rgba(197, 179, 161, 0); }
             30% { background-color: rgba(197, 179, 161, 0.25); }
@@ -67,7 +65,7 @@
         }
     </style>
 </head>
-<body class="flex items-center justify-center p-0 md:p-4 overflow-hidden relative">
+<body class="flex items-center justify-center p-0 md:p-4 overflow-hidden relative w-full h-full">
 
     <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div class="absolute w-[350px] h-[350px] rounded-full bg-[#EAD8C3]/5 blur-[120px] -top-20 -left-20"></div>
@@ -117,12 +115,9 @@
                 漫步進入
             </button>
         </div>
-        <div class="mt-5">
-            <span class="text-[9px] text-[#D2C5B8] tracking-widest uppercase">免註冊安全通訊系統</span>
-        </div>
     </div>
 
-    <div id="chat-container" class="hidden w-full md:max-w-3xl h-full bg-white/95 backdrop-blur-lg border-0 md:border border-[#FAF6F0] md:rounded-[32px] rounded-none shadow-[0_16px_48px_rgba(180,170,160,0.03)] flex flex-col overflow-hidden z-10 transition-all duration-500 relative">
+    <div id="chat-container" class="hidden absolute md:static w-full md:max-w-3xl bg-white/95 backdrop-blur-lg border-0 md:border border-[#FAF6F0] md:rounded-[32px] rounded-none shadow-[0_16px_48px_rgba(180,170,160,0.03)] flex flex-col overflow-hidden z-10 transition-all duration-300">
         
         <div id="chat-header" class="bg-white/90 border-b border-[#FAF6F0] px-5 py-3 flex justify-between items-center z-10 shrink-0">
             <div class="flex items-center gap-2.5">
@@ -139,7 +134,7 @@
             </div>
             
             <div class="flex items-center gap-1.5">
-                <button id="search-trigger" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] flex items-center justify-center transition duration-200" title="搜尋對話紀錄">
+                <button id="search-trigger" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] flex items-center justify-center transition duration-200">
                     <i class="ph-bold ph-magnifying-glass text-xs"></i>
                 </button>
                 
@@ -150,7 +145,7 @@
                     <span class="truncate max-w-[80px]">未登入</span>
                 </div>
                 
-                <button id="logout-btn" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] hover:text-[#C5B3A1] flex items-center justify-center transition duration-200" title="登出 / 切換暱稱">
+                <button id="logout-btn" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] hover:text-[#C5B3A1] flex items-center justify-center transition duration-200">
                     <i class="ph-bold ph-sign-out text-xs"></i>
                 </button>
             </div>
@@ -169,7 +164,7 @@
         <div id="message-box" class="flex-1 px-4 md:px-6 py-4 overflow-y-auto bg-[#FDFCFB]/40 flex flex-col gap-4 relative">
             </div>
 
-        <button id="scroll-to-bottom-btn" class="absolute bottom-20 right-6 z-20 w-10 h-10 bg-[#C5B3A1]/90 hover:bg-[#B7A491] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(197,179,161,0.3)] transition-all duration-300 opacity-0 scale-90 translate-y-4 pointer-events-none" title="下滑到最新訊息">
+        <button id="scroll-to-bottom-btn" class="absolute bottom-20 right-6 z-20 w-10 h-10 bg-[#C5B3A1]/90 hover:bg-[#B7A491] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(197,179,161,0.3)] transition-all duration-300 opacity-0 scale-90 translate-y-4 pointer-events-none">
             <i class="ph-bold ph-caret-double-down text-lg"></i>
         </button>
 
@@ -197,12 +192,6 @@
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">💌</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">🌿</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">💡</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">😀</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">🤗</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">😶‍🌫️</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">🫩</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">🥲</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition">👀</button>
             </div>
         </div>
 
@@ -215,17 +204,17 @@
                     <div id="reply-target-content" class="text-[10px] text-[#8C7E70] truncate mt-0.5">訊息內容預覽...</div>
                 </div>
             </div>
-            <button id="cancel-reply-btn" class="w-6 h-6 rounded-full bg-[#FAF6F0] hover:bg-[#EFEBE4] text-[#A89C8F] flex items-center justify-center transition duration-150 active:scale-95 shrink-0" title="取消回覆">
+            <button id="cancel-reply-btn" class="w-6 h-6 rounded-full bg-[#FAF6F0] hover:bg-[#EFEBE4] text-[#A89C8F] flex items-center justify-center transition duration-150 active:scale-95 shrink-0">
                 <i class="ph ph-x text-[10px]"></i>
             </button>
         </div>
 
         <div id="input-area" class="p-3 md:p-4 bg-white border-t border-[#FAF6F0] flex items-center gap-2 relative shrink-0">
-            <button id="emoji-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200" title="選擇表情符號">
+            <button id="emoji-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200">
                 <i class="ph-bold ph-smiley"></i>
             </button>
             
-            <button id="image-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200" title="傳送照片">
+            <button id="image-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200">
                 <i class="ph-bold ph-image"></i>
             </button>
             <input type="file" id="image-input" class="hidden" accept="image/*">
@@ -312,20 +301,55 @@
         let isTyping = false;
         let typingTimeout = null;
 
-        // 【修正核心】：安全處理行動端視區變化
-        if (window.visualViewport) {
-            const handleVisualViewportResize = () => {
-                // 安全防滑動：只要鍵盤彈起，強制重置 body 滾動並將對話滾到底部
-                window.scrollTo(0, 0);
-                if (nickname) {
-                    setTimeout(() => {
-                        messageBox.scrollTop = messageBox.scrollHeight;
-                    }, 80);
-                }
-            };
-            window.visualViewport.addEventListener("resize", handleVisualViewportResize);
-            window.visualViewport.addEventListener("scroll", handleVisualViewportResize);
+        // ==========================================
+        // 🔥【iOS 鍵盤防檔、防飄、防遮蓋核心優化】
+        // ==========================================
+        function adjustLayoutForKeyboard() {
+            if (!window.visualViewport) return;
+            
+            // 取得當前真實虛擬視區的高與寬 (會扣除鍵盤、導航條、iOS 完成列)
+            const viewportHeight = window.visualViewport.height;
+            const viewportWidth = window.visualViewport.width;
+            const viewportTop = window.visualViewport.offsetTop;
+            
+            // 強制讓 chatContainer 貼齊當前虛擬視窗 (Visual Viewport)
+            if (window.innerWidth < 768) { // 行動端全螢幕
+                chatContainer.style.position = "fixed";
+                chatContainer.style.left = "0px";
+                chatContainer.style.top = `${viewportTop}px`;
+                chatContainer.style.width = `${viewportWidth}px`;
+                chatContainer.style.height = `${viewportHeight}px`;
+                chatContainer.style.borderRadius = "0px";
+            } else { // 桌面端保持預設
+                chatContainer.style.position = "";
+                chatContainer.style.left = "";
+                chatContainer.style.top = "";
+                chatContainer.style.width = "";
+                chatContainer.style.height = "";
+                chatContainer.style.borderRadius = "";
+            }
+            
+            // 每次視窗變動，防呆滾動到底部
+            if (nickname) {
+                messageBox.scrollTop = messageBox.scrollHeight;
+            }
         }
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", adjustLayoutForKeyboard);
+            window.visualViewport.addEventListener("scroll", adjustLayoutForKeyboard);
+        }
+        window.addEventListener("resize", adjustLayoutForKeyboard);
+
+        // 當輸入框取得與失去焦點時，主動觸發調整，並確保滾動條不卡住
+        messageInput.addEventListener("focus", () => {
+            setTimeout(adjustLayoutForKeyboard, 80);
+        });
+        messageInput.addEventListener("blur", () => {
+            setTimeout(adjustLayoutForKeyboard, 80);
+            window.scrollTo(0, 0); // 鍵盤收起時，重置 body 防止空白殘留
+        });
+        // ==========================================
 
         const DEFAULT_AVATARS = [
             { id: "teddy", val: "🧸", bg: "#F5EFEB" },
@@ -371,7 +395,7 @@
                     await deleteDoc(typingRef);
                 }
             } catch (error) {
-                console.error("同步輸入狀態失敗：", error);
+                console.error(error);
             }
         }
 
@@ -586,6 +610,7 @@
             loginContainer.classList.add("hidden");
             chatContainer.classList.remove("hidden");
             chatContainer.classList.add("flex");
+            adjustLayoutForKeyboard();
             listenForMessages();
         }
 
@@ -619,6 +644,7 @@
                 loginContainer.classList.add("hidden");
                 chatContainer.classList.remove("hidden");
                 chatContainer.classList.add("flex");
+                adjustLayoutForKeyboard();
                 listenForMessages();
             }, 300);
         }
