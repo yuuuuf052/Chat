@@ -868,7 +868,10 @@
                 });
                 messageInput.value = "";
                 clearReply();
-            } catch (error) {}
+            } catch (error) {
+                console.error("發送失敗原因:", error);
+                showToast("發送失敗，請確認網路或資料庫權限");
+            }
         }
 
         sendBtn.addEventListener("click", sendMessage);
