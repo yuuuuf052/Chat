@@ -165,7 +165,7 @@
             </div>
         </div>
 
-        <!-- 搜尋欄 (內建「上一個/下一個」切換按鈕) -->
+        <!-- 搜尋欄 -->
         <div id="search-bar-container" class="hidden px-5 py-2.5 bg-[#FCFAF7] border-b border-[#FAF6F0] flex items-center gap-2 transition-all duration-300 transform -translate-y-4 opacity-0 shrink-0">
             <div class="relative flex-1 flex items-center">
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#C5B3A1] text-xs"></i>
@@ -385,7 +385,6 @@
         // 🔥【優化：iOS 鍵盤防擋邏輯（精準區分手機與電腦）】
         // =======================================================
         function adjustLayoutForKeyboard() {
-            // 如果是寬螢幕（電腦端），完全不介入與鎖定高度，徹底解決電腦無法下拉問題
             if (window.innerWidth >= 768) {
                 document.documentElement.style.position = "";
                 document.documentElement.style.overflow = "";
@@ -401,7 +400,6 @@
                 return;
             }
 
-            // 行動裝置端 (手機) 專屬鎖定
             if (!window.visualViewport) return;
             
             document.documentElement.style.position = "fixed";
@@ -941,13 +939,63 @@
             } catch (e) {}
         }
 
+        // =======================================================
+        // 📅【新增：日期友好轉換小工具】
+        // =======================================================
+        function getFriendlyDateString(date) {
+            const today = new Date();
+            
+            // 消除時分秒，精準對比日期天數
+            const dDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const dToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            
+            // 計算相差的毫秒數並轉化為天數差
+            const diffTime = dToday.getTime() - dDate.getTime();
+            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return "今天";
+            } else if (diffDays === 1) {
+                return "昨天";
+            } else if (diffDays === 2) {
+                return "前天";
+            } else {
+                // 更早的日期直接顯示年月日
+                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+            }
+        }
+        // =======================================================
+
         function renderMessageUI() {
             messageBox.innerHTML = "";
             const displayedMessages = allMessages;
+            
+            let lastMessageDateStr = ""; // 用來追蹤上一條訊息的日期字串
 
             displayedMessages.forEach((msg) => {
                 const isSelf = msg.sender === nickname;
                 const isRecalled = msg.isRecalled === true;
+
+                // ---------------------------------------------------
+                // 📅 日期分割線邏輯
+                // ---------------------------------------------------
+                if (msg.timestamp) {
+                    const msgDate = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
+                    const currentFriendlyDateStr = getFriendlyDateString(msgDate);
+                    
+                    // 如果這條訊息的日期字串跟上一條不同，就塞入一個置中分割線
+                    if (currentFriendlyDateStr !== lastMessageDateStr) {
+                        const dateDivider = document.createElement("div");
+                        dateDivider.className = "flex justify-center my-4 w-full select-none";
+                        dateDivider.innerHTML = `
+                            <div class="px-4 py-1.5 bg-[#FAF6F0] rounded-full text-[10px] text-[#A89C8F] font-semibold tracking-wider shadow-sm border border-[#FAF6F0]/50">
+                                ${currentFriendlyDateStr}
+                            </div>
+                        `;
+                        messageBox.appendChild(dateDivider);
+                        lastMessageDateStr = currentFriendlyDateStr; // 更新日期標記
+                    }
+                }
 
                 const wrapper = document.createElement("div");
                 wrapper.className = `flex w-full items-start gap-3 ${isSelf ? 'justify-end' : 'justify-start'}`;
