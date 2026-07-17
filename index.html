@@ -19,7 +19,1640 @@
             width: 100%;
             height: 100%;
             margin: 0;
+            padding: 0;<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>溫柔即時公共空間</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(255, 254, 252, 1) 0%, rgba(252, 249, 245, 1) 100%);
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
             padding: 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(197, 179, 161, 0.35);
+            border-radius: 20px;
+        }
+        img {
+            -webkit-user-drag: none;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .dot-bounce {
+            animation: bounce 1.2s infinite ease-in-out;
+        }
+        .dot-bounce:nth-child(2) { animation-delay: 0.2s; }
+        .dot-bounce:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes reply-pulse {
+            0% { background-color: rgba(197, 179, 161, 0); }
+            30% { background-color: rgba(197, 179, 161, 0.25); }
+            100% { background-color: rgba(197, 179, 161, 0); }
+        }
+        .message-highlight {
+            animation: reply-pulse 1.8s ease-out;
+            border-radius: 24px;
+        }
+
+        /* 搜尋關鍵字高亮樣式 */
+        mark.highlight {
+            background-color: #F7EAD7; 
+            color: #5C5246;
+            border-radius: 4px;
+            padding: 0 2px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        /* 當前聚焦的搜尋高亮項目 */
+        mark.highlight.current-focus {
+            background-color: #E88D67 !important; 
+            color: white !important;
+            box-shadow: 0 0 8px rgba(232, 141, 103, 0.6);
+            transform: scale(1.05);
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-0 md:p-4 md:overflow-auto overflow-hidden relative w-full h-full">
+
+    <div class="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="absolute w-[350px] h-[350px] rounded-full bg-[#EAD8C3]/5 blur-[120px] -top-20 -left-20"></div>
+        <div class="absolute w-[450px] h-[450px] rounded-full bg-[#DFD3C3]/5 blur-[150px] -bottom-30 -right-20"></div>
+    </div>
+
+    <!-- 頂部通知 -->
+    <div id="toast-notification" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#C5B3A1] text-white px-6 py-3 rounded-full shadow-[0_8px_24px_rgba(197,179,161,0.15)] flex items-center gap-2 transition-all duration-300 transform translate-y-[-100px] opacity-0 pointer-events-none">
+        <i class="ph-bold ph-info text-sm"></i>
+        <span id="toast-message" class="text-xs font-medium tracking-wide"></span>
+    </div>
+
+    <!-- 圖片 Lightbox -->
+    <div id="lightbox" class="hidden fixed inset-0 z-50 bg-[#3A332C]/30 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300 opacity-0 pointer-events-none cursor-zoom-out">
+        <button id="lightbox-close" class="absolute top-6 right-6 w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-xl transition duration-200">
+            <i class="ph-bold ph-x"></i>
+        </button>
+        <img id="lightbox-img" class="max-w-full max-h-[85vh] rounded-[24px] shadow-2xl transition-transform duration-300 scale-95" src="" alt="放大預覽">
+    </div>
+
+    <!-- 1. 登入介面 -->
+    <div id="login-container" class="w-full max-w-md bg-white/90 backdrop-blur-lg border border-[#FBF9F6] p-6 md:p-8 rounded-[32px] shadow-[0_16px_48px_rgba(180,170,160,0.03)] text-center transition-all duration-500 z-10 mx-4 md:mx-0 max-h-[90vh] overflow-y-auto">
+        <div class="w-12 h-12 bg-[#FBF9F6] text-[#C5B3A1] rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 shadow-inner">
+            <i class="ph-bold ph-sparkle"></i>
+        </div>
+        <h2 class="text-lg font-bold text-[#5C4D3C] mb-1 tracking-wide">溫柔即時空間</h2>
+        <p class="text-xs text-[#A89C8F] mb-6 leading-relaxed">微風流淌的角落。給自己一個名字與溫慢頭像，隨時開始對話。</p>
+        
+        <div class="mb-6 text-left">
+            <label class="text-[11px] font-semibold text-[#8C7E70] uppercase tracking-wider block mb-2 px-1">選擇您的頭像角色：</label>
+            <div class="flex items-center gap-3 flex-wrap justify-between bg-[#FCFAF7] p-3 rounded-2xl border border-[#FAF6F0]">
+                <div class="flex items-center gap-2" id="default-avatars-list"></div>
+                <button id="avatar-upload-trigger" class="text-[10px] text-[#A89C8F] hover:text-[#8C7E70] bg-white border border-[#EFEBE4] px-2.5 py-1.5 rounded-xl transition duration-200 flex items-center gap-1 active:scale-95 font-medium">
+                    <i class="ph ph-camera text-xs"></i>
+                    <span>上傳照片</span>
+                </button>
+                <input type="file" id="avatar-file-input" class="hidden" accept="image/*">
+            </div>
+            <div class="flex items-center gap-2 mt-3 px-1">
+                <span class="text-[10px] text-[#A89C8F]">當前預覽：</span>
+                <div id="selected-avatar-preview" class="w-8 h-8 rounded-full border border-[#EFEBE4] flex items-center justify-center text-base overflow-hidden bg-white">🧸</div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <input type="text" id="username-input" class="w-full px-5 py-3.5 bg-[#FCFAF7] border border-[#FAF6F0] rounded-2xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] focus:ring-1 focus:ring-[#C5B3A1] transition duration-200" placeholder="怎麼稱呼您呢？" maxlength="15">
+            <button id="login-btn" class="w-full py-3.5 bg-[#C5B3A1] hover:bg-[#B7A491] text-white font-medium rounded-2xl text-xs transition duration-300 shadow-sm shadow-[#C5B3A1]/10 active:scale-[0.98]">
+                漫步進入
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. 聊天室主介面 -->
+    <div id="chat-container" class="hidden absolute md:static w-full md:max-w-3xl h-full md:h-[85vh] bg-white/95 backdrop-blur-lg border-0 md:border border-[#FAF6F0] md:rounded-[32px] rounded-none shadow-[0_16px_48px_rgba(180,170,160,0.03)] flex flex-col overflow-hidden z-10">
+        
+        <!-- 頂部導航 -->
+        <div id="chat-header" class="bg-white/90 border-b border-[#FAF6F0] px-5 py-3 flex justify-between items-center z-10 shrink-0">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 bg-[#FCFAF7] text-[#C5B3A1] rounded-full flex items-center justify-center text-sm">
+                    <i class="ph-bold ph-planet"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-[#5C4D3C] text-xs md:text-sm tracking-wide">溫柔即時空間</h3>
+                    <!-- 點擊此處可切換連線狀態 -->
+                    <button id="toggle-connection-btn" class="flex items-center gap-1 focus:outline-none group" title="點擊切換連線模式">
+                        <span id="conn-dot" class="w-1.5 h-1.5 bg-[#C5B3A1] rounded-full animate-pulse"></span>
+                        <span id="conn-status" class="text-[9px] text-[#A89C8F] group-hover:text-[#5C4D3C] underline decoration-dotted transition duration-150">正在載入連線...</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-1.5">
+                <!-- 療癒音效切換按鈕 -->
+                <button id="audio-toggle-btn" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#C5B3A1] flex items-center justify-center transition duration-200" title="切換療癒音效">
+                    <i id="audio-icon" class="ph-bold ph-speaker-high text-xs"></i>
+                </button>
+
+                <button id="search-trigger" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] flex items-center justify-center transition duration-200">
+                    <i class="ph-bold ph-magnifying-glass text-xs"></i>
+                </button>
+                
+                <div id="current-user-tag" class="text-[10px] bg-[#FCFAF7] text-[#8C7E70] pl-1.5 pr-3 py-1 rounded-full font-medium flex items-center gap-1.5 border border-[#FAF6F0]">
+                    <div id="header-avatar-box" class="w-5 h-5 rounded-full bg-white border border-[#EFEBE4] overflow-hidden flex items-center justify-center text-xs">🧸</div>
+                    <span class="truncate max-w-[80px]">未登入</span>
+                </div>
+                
+                <button id="logout-btn" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] hover:text-[#C5B3A1] flex items-center justify-center transition duration-200">
+                    <i class="ph-bold ph-sign-out text-xs"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 搜尋欄 -->
+        <div id="search-bar-container" class="hidden px-5 py-2.5 bg-[#FCFAF7] border-b border-[#FAF6F0] flex items-center gap-2 transition-all duration-300 transform -translate-y-4 opacity-0 shrink-0">
+            <div class="relative flex-1 flex items-center">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#C5B3A1] text-xs"></i>
+                <input type="text" id="search-input" class="w-full pl-8 pr-28 py-2 bg-white border border-[#FAF6F0] rounded-xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] transition duration-200" placeholder="搜尋對話關鍵字..." autocomplete="off">
+                
+                <!-- 搜尋控制控制區（筆數提示 + 上下箭頭） -->
+                <div id="search-controls" class="hidden absolute right-2 flex items-center gap-1 bg-[#FCFAF7] py-0.5 px-1.5 rounded-lg border border-[#FAF6F0]">
+                    <span id="search-index-info" class="text-[9px] text-[#A89C8F] font-semibold tracking-wider px-1">0 / 0</span>
+                    <div class="w-[1px] h-2.5 bg-[#EFEBE4]"></div>
+                    <button id="search-prev-btn" class="text-[#8C7E70] hover:text-[#5C5246] p-0.5 rounded transition active:scale-90" title="上一個">
+                        <i class="ph-bold ph-caret-up text-[10px]"></i>
+                    </button>
+                    <button id="search-next-btn" class="text-[#8C7E70] hover:text-[#5C5246] p-0.5 rounded transition active:scale-90" title="下一個">
+                        <i class="ph-bold ph-caret-down text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+            <button id="search-close" class="text-[10px] text-[#A89C8F] hover:text-[#8C7E70] px-1.5 py-1 font-medium transition duration-200">關閉</button>
+        </div>
+
+        <!-- 訊息區 -->
+        <div id="message-box" class="flex-1 px-4 md:px-6 py-4 overflow-y-auto bg-[#FDFCFB]/40 flex flex-col gap-4 relative">
+            <!-- 訊息動態渲染 -->
+        </div>
+
+        <!-- 下滑按鈕 -->
+        <button id="scroll-to-bottom-btn" class="absolute bottom-24 right-6 z-20 w-10 h-10 bg-[#C5B3A1]/90 hover:bg-[#B7A491] text-white rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(197,179,161,0.3)] transition-all duration-300 opacity-0 scale-90 translate-y-4 pointer-events-none">
+            <i class="ph-bold ph-caret-double-down text-lg"></i>
+        </button>
+
+        <!-- 輸入中狀態 -->
+        <div id="typing-indicator" class="hidden absolute bottom-24 left-6 z-20 bg-white/95 backdrop-blur-md border border-[#FAF6F0] px-3.5 py-1.5 rounded-full shadow-[0_4px_16px_rgba(180,170,160,0.08)] flex items-center gap-1.5 transition-all duration-300 transform translate-y-4 opacity-0 pointer-events-none">
+            <span id="typing-text" class="text-[10px] text-[#8C7E70] font-medium">有人正在輸入中</span>
+            <div class="flex gap-1 items-center h-2 mt-0.5 pl-0.5">
+                <span class="w-1 h-1 bg-[#C5B3A1] rounded-full dot-bounce"></span>
+                <span class="w-1 h-1 bg-[#C5B3A1] rounded-full dot-bounce"></span>
+                <span class="w-1 h-1 bg-[#C5B3A1] rounded-full dot-bounce"></span>
+            </div>
+        </div>
+
+        <!-- 表情面板 -->
+        <div id="emoji-picker" class="hidden absolute bottom-24 left-4 md:left-6 z-30 bg-white border border-[#FAF6F0] p-3.5 rounded-2xl shadow-[0_12px_36px_rgba(180,170,160,0.12)] max-w-[290px] transition-all duration-300 opacity-0 scale-95 origin-bottom-left">
+            <div class="text-[9px] text-[#A89C8F] mb-2 font-medium tracking-wide">挑選溫柔心情：</div>
+            <div class="grid grid-cols-7 gap-1.5 text-lg max-h-[220px] overflow-y-auto pr-1">
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😊</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥰</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😍</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😘</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😋</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😜</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥳</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤔</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫣</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤫</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😅</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫠</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥺</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😭</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😴</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👍</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👌</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🙏</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">❤️</button>
+                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">✨</button>
+            </div>
+        </div>
+
+        <!-- 回覆預覽 -->
+        <div id="reply-preview-bar" class="hidden px-5 py-2 bg-[#FCFAF7] border-t border-[#FAF6F0] flex items-center justify-between gap-3 shrink-0">
+            <div class="flex items-start gap-2 border-l-2 border-[#C5B3A1] pl-3 py-0.5 truncate flex-1">
+                <div class="truncate">
+                    <div class="text-[9px] text-[#C5B3A1] font-semibold tracking-wide">
+                        回覆給 <span id="reply-target-sender" class="text-[#8C7E70]">@暱稱</span>
+                    </div>
+                    <div id="reply-target-content" class="text-[10px] text-[#8C7E70] truncate mt-0.5">訊息內容預覽...</div>
+                </div>
+            </div>
+            <button id="cancel-reply-btn" class="w-6 h-6 rounded-full bg-[#FAF6F0] hover:bg-[#EFEBE4] text-[#A89C8F] flex items-center justify-center transition duration-150 active:scale-95 shrink-0">
+                <i class="ph ph-x text-[10px]"></i>
+            </button>
+        </div>
+
+        <!-- 底部輸入區 -->
+        <div id="input-area" class="p-3 pb-4 md:p-4 bg-white border-t border-[#FAF6F0] flex items-center gap-2 relative shrink-0">
+            <button id="emoji-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200 shrink-0">
+                <i class="ph-bold ph-smiley"></i>
+            </button>
+            
+            <button id="image-trigger" class="w-10 h-10 bg-[#FCFAF7] hover:bg-[#FAF6F0] text-[#A89C8F] border border-[#FAF6F0] rounded-xl flex items-center justify-center text-lg transition duration-200 shrink-0">
+                <i class="ph-bold ph-image"></i>
+            </button>
+            <input type="file" id="image-input" class="hidden" accept="image/*">
+
+            <input type="text" id="message-input" class="flex-1 py-2.5 px-4 bg-[#FCFAF7] border border-[#FAF6F0] rounded-xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] transition duration-200" placeholder="說點溫柔的話吧..." autocomplete="off">
+            
+            <button id="send-btn" class="w-10 h-10 bg-[#C5B3A1] hover:bg-[#B7A491] text-white rounded-xl flex items-center justify-center transition duration-200 shadow-sm shadow-[#C5B3A1]/5 active:scale-95 shrink-0">
+                <i class="ph-bold ph-paper-plane-right text-base"></i>
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        // =======================================================
+        // 🎵【療癒系在地音效合成器 (Web Audio API)】
+        // =======================================================
+        let audioCtx = null;
+        let isAudioMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // 收到訊息：528 Hz 奇蹟磬聲（空靈、放鬆）
+        function playMessageReceivedSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                // 主震盪器 (奇蹟頻率 528Hz)
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                // 泛音列 (讓聲音更溫潤有層次)
+                const overtone = audioCtx.createOscillator();
+                const overtoneGain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(528, now); // 528Hz
+                
+                overtone.type = 'sine';
+                overtone.frequency.setValueAtTime(1056, now); // 諧音泛音 1056Hz
+
+                // 溫柔的遞減包絡線 (Bell Decay)
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+
+                overtoneGain.gain.setValueAtTime(0, now);
+                overtoneGain.gain.linearRampToValueAtTime(0.04, now + 0.03);
+                overtoneGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+                osc.connect(gain);
+                overtone.connect(overtoneGain);
+                gain.connect(audioCtx.destination);
+                overtoneGain.connect(audioCtx.destination);
+
+                osc.start(now);
+                overtone.start(now);
+                osc.stop(now + 1.6);
+                overtone.stop(now + 0.9);
+            } catch (e) {
+                console.warn("音效啟動受限:", e);
+            }
+        }
+
+        // 送出訊息：柔和的微風掠過聲 (Soft Whoosh)
+        function playMessageSentSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.25);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+                filter.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch (e) {}
+        }
+
+        // 打字音效：極輕柔的木質調敲擊 (Typewriter Wood-click)
+        function playTypewritingSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(700, now + 0.03);
+
+                filter.type = 'bandpass';
+                filter.frequency.value = 1000;
+                filter.Q.value = 5;
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.02, now + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } catch (e) {}
+        }
+
+        // =======================================================
+        // 💬【本地伴侶與暖心對話庫】
+        // =======================================================
+        const MOCK_PARTNERS = [
+            { name: "喵喵 🐱", avatar: "🐱", bg: "#F8F1EB" },
+            { name: "小葉 🌿", avatar: "🌿", bg: "#EBF5EB" },
+            { name: "雲朵 ☁️", avatar: "☁️", bg: "#EBF1F5" },
+            { name: "拿鐵 ☕", avatar: "☕", bg: "#ECE6DF" }
+        ];
+
+        function getWarmMockReply(userText) {
+            const text = userText.toLowerCase().trim();
+            if (text.includes("你好") || text.includes("哈囉") || text.includes("hi") || text.includes("hello")) {
+                return "你好呀！很高興能在這個溫暖的角落遇見你 ✨ 這裡的空氣很安靜，希望你喜歡。";
+            }
+            if (text.includes("累") || text.includes("辛苦") || text.includes("壓力") || text.includes("煩") || text.includes("忙")) {
+                return "今天辛苦你了 🌿。拍拍肩膀，先把肩上的包裹放下來吧。這裡有暖暖的空間，閉上眼放空一下下。";
+            }
+            if (text.includes("開心") || text.includes("快樂") || text.includes("棒") || text.includes("耶") || text.includes("幸運")) {
+                return "太好了！看到你心情這麼好，我的世界也跟著亮了起來呢 🥰 感謝你把這份寶貴的喜悅帶進來分享！";
+            }
+            if (text.includes("難過") || text.includes("哭") || text.includes("傷心") || text.includes("寂寞") || text.includes("孤單") || text.includes("不開心")) {
+                return "（遞上軟綿綿的抱枕與一杯溫牛奶 🧸）沒關係的，想哭就哭吧。不管外面的風雨有多大，我都一直在這裡陪著你，不走開。";
+            }
+            if (text.includes("天氣") || text.includes("雨") || text.includes("晴") || text.includes("冷") || text.includes("熱")) {
+                return "不論你那裡現在是艷陽高照還是細雨綿綿，都希望你的心裡此時有一道溫柔的微風與陽光 ☁️";
+            }
+            if (text.includes("誰") || text.includes("名字") || text.includes("你叫")) {
+                return "我是默默陪在空中的雲朵與風 ☁️，也是願意安靜聽你傾訴的好朋友。";
+            }
+            if (text.includes("晚晚") || text.includes("晚安") || text.includes("睡")) {
+                return "晚安唷 😴。希望今天晚上的夢境軟綿綿的，像棉花糖一樣甜美。明天又是新的一天，好夢！";
+            }
+            if (text.includes("加油") || text.includes("撐") || text.includes("努力")) {
+                return "加油呀 ✨！雖然有時前方的路有點模糊，但你一步一步走過來的腳印，都是最美最勇敢的證明喔。";
+            }
+            const WARM_RESPONSES = [
+                "聽你這麼說，感覺心裡暖暖的 🌿",
+                "謝謝你願意分享這些，今天辛苦囉，喝杯溫水放鬆一下吧 ☕",
+                "沒關係的，不管發生什麼事，這裡永遠都有個溫柔的角落陪伴你 ☁️",
+                "哇！這個想法真棒，你真的很心思細膩呢 ✨",
+                "不管今天過得怎麼樣，你都已經做得非常好了喔 🧸",
+                "生活雖然有時忙亂，但別忘了給自己留一點溫慢的時光 😊",
+                "看見你的消息真開心，希望此時此刻的你也感到放鬆自在！"
+            ];
+            return WARM_RESPONSES[Math.floor(Math.random() * WARM_RESPONSES.length)];
+        }
+
+        function parseMessageDate(timestamp) {
+            if (!timestamp) return new Date();
+            if (typeof timestamp.toDate === 'function') {
+                return timestamp.toDate();
+            }
+            if (typeof timestamp === 'object' && timestamp.seconds !== undefined) {
+                return new Date(timestamp.seconds * 1000);
+            }
+            const parsed = new Date(timestamp);
+            if (!isNaN(parsed.getTime())) {
+                return parsed;
+            }
+            return new Date();
+        }
+
+        // =======================================================
+        // 🧩【UI 元素與狀態綁定】
+        // =======================================================
+        const loginContainer = document.getElementById("login-container");
+        const chatContainer = document.getElementById("chat-container");
+        const usernameInput = document.getElementById("username-input");
+        const loginBtn = document.getElementById("login-btn");
+        const currentUserTag = document.getElementById("current-user-tag");
+        const headerAvatarBox = document.getElementById("header-avatar-box");
+        const logoutBtn = document.getElementById("logout-btn");
+        const messageBox = document.getElementById("message-box");
+        const messageInput = document.getElementById("message-input");
+        const sendBtn = document.getElementById("send-btn");
+        const emojiTrigger = document.getElementById("emoji-trigger");
+        const emojiPicker = document.getElementById("emoji-picker");
+        const toastNotification = document.getElementById("toast-notification");
+        const toastMessage = document.getElementById("toast-message");
+        const typingIndicator = document.getElementById("typing-indicator");
+        const typingText = document.getElementById("typing-text");
+        const replyPreviewBar = document.getElementById("reply-preview-bar");
+        const replyTargetSender = document.getElementById("reply-target-sender");
+        const replyTargetContent = document.getElementById("reply-target-content");
+        const cancelReplyBtn = document.getElementById("cancel-reply-btn");
+        const searchTrigger = document.getElementById("search-trigger");
+        const searchBarContainer = document.getElementById("search-bar-container");
+        const searchInput = document.getElementById("search-input");
+        const searchClose = document.getElementById("search-close");
+        const imageTrigger = document.getElementById("image-trigger");
+        const imageInput = document.getElementById("image-input");
+        const scrollToBottomBtn = document.getElementById("scroll-to-bottom-btn");
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+        const defaultAvatarsList = document.getElementById("default-avatars-list");
+        const avatarUploadTrigger = document.getElementById("avatar-upload-trigger");
+        const avatarFileInput = document.getElementById("avatar-file-input");
+        const selectedAvatarPreview = document.getElementById("selected-avatar-preview");
+        const inputArea = document.getElementById("input-area");
+        const connDot = document.getElementById("conn-dot");
+        const connStatus = document.getElementById("conn-status");
+        const toggleConnectionBtn = document.getElementById("toggle-connection-btn");
+
+        const searchControls = document.getElementById("search-controls");
+        const searchIndexInfo = document.getElementById("search-index-info");
+        const searchPrevBtn = document.getElementById("search-prev-btn");
+        const searchNextBtn = document.getElementById("search-next-btn");
+
+        const audioToggleBtn = document.getElementById("audio-toggle-btn");
+        const audioIcon = document.getElementById("audio-icon");
+
+        // 系統狀態
+        let nickname = "";
+        let currentAvatar = "🧸";
+        let allMessages = [];
+        let activeFilter = "";
+        let replyToMsg = null;
+        let isTyping = false;
+        let typingTimeout = null;
+        let searchMatches = []; 
+        let currentSearchIndex = -1;
+        let offlineMode = false;
+
+        // Firebase 相關引用與系統安全變數
+        let db = null;
+        let auth = null;
+        let firebaseApp = null;
+        let unsubMessages = null;
+        let unsubTyping = null;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gentle-chat-space';
+
+        // 輔助函式：逸出 HTML 避免標籤解析錯誤
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // 搜尋匹配高亮器
+        function highlightText(text, keyword) {
+            const escaped = escapeHTML(text);
+            if (!keyword) return escaped;
+            const regex = new RegExp(`(${keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+            return escaped.replace(regex, '<mark class="highlight">$1</mark>');
+        }
+
+        // 格式化輸出時間
+        function formatTime(timestamp) {
+            const date = parseMessageDate(timestamp);
+            const hrs = String(date.getHours()).padStart(2, '0');
+            const mins = String(date.getMinutes()).padStart(2, '0');
+            return `${hrs}:${mins}`;
+        }
+
+        // 音效開關點擊
+        audioToggleBtn.addEventListener("click", () => {
+            initAudio();
+            isAudioMuted = !isAudioMuted;
+            if (isAudioMuted) {
+                audioIcon.className = "ph-bold ph-speaker-slash text-xs text-stone-400";
+                showToast("音效已靜音 🔇");
+            } else {
+                audioIcon.className = "ph-bold ph-speaker-high text-xs text-[#C5B3A1]";
+                showToast("療癒音效已開啟 🎵");
+                playMessageReceivedSound();
+            }
+        });
+
+        // =======================================================
+        // ☁️【Firebase 雲端即時連線功能 (遵照 Strict Rules)】
+        // =======================================================
+        async function tryInitializeFirebase() {
+            // 優先讀取 Sandbox 環境配置變數，確保專案連線正確無誤
+            let firebaseConfig;
+            try {
+                firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            } catch (e) {
+                console.error("Config JSON 解析錯誤", e);
+            }
+
+            // 如果環境變數不存在，使用備用開發沙盒配置
+            if (!firebaseConfig) {
+                firebaseConfig = {
+                    apiKey: "AIzaSyCS9qKnVEYjRzKOXOb3u2gQej1Pc1qJr1c",
+                    authDomain: "my-simple-chat-50e3e.firebaseapp.com",
+                    projectId: "my-simple-chat-50e3e",
+                    storageBucket: "my-simple-chat-50e3e.firebasestorage.app",
+                    messagingSenderId: "98528300481",
+                    appId: "1:98528300481:web:d816e74665facef2113340",
+                    measurementId: "G-CHXE28LVYD"
+                };
+            }
+
+            const initTimeout = setTimeout(() => {
+                if (db === null) {
+                    console.warn("雲端初始化回應過長，暫時使用單機模擬模式。");
+                    switchToOfflineMode();
+                }
+            }, 3500);
+
+            try {
+                // 採用 Firebase 11.6.1 規範
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+                const { getAuth, signInAnonymously, signInWithCustomToken } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+                const { 
+                    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, addDoc, getDocs 
+                } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+
+                firebaseApp = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseApp);
+
+                // RULE 3: 必須優先驗證（AUTH FIRST），否則後續數據庫讀寫將全部被拒絕
+                let userCred;
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenErr) {
+                        userCred = await signInAnonymously(auth);
+                    }
+                } else {
+                    userCred = await signInAnonymously(auth);
+                }
+
+                if (userCred && userCred.user) {
+                    db = getFirestore(firebaseApp);
+                    offlineMode = false;
+                    
+                    // 將合規函式庫註冊於全域，方便進行狀態管理
+                    window.fb = { collection, addDoc, query, onSnapshot, doc, updateDoc, setDoc, deleteDoc };
+                    
+                    clearTimeout(initTimeout);
+                    connDot.className = "w-1.5 h-1.5 bg-[#C2D3B8] rounded-full animate-pulse";
+                    connStatus.textContent = "雲端即時連線 (點擊切換)";
+                    console.log("Firebase 雲端安全登入與即時連線建立成功。");
+
+                    if (nickname) {
+                        startListening();
+                    }
+                } else {
+                    throw new Error("認證流程異常");
+                }
+            } catch (error) {
+                clearTimeout(initTimeout);
+                console.warn("無法與雲端進行握手，已切換為「單機沙盒安全模式」。原因：", error);
+                switchToOfflineMode();
+            }
+        }
+
+        function switchToOfflineMode() {
+            offlineMode = true;
+            connDot.className = "w-1.5 h-1.5 bg-[#E88D67] rounded-full animate-pulse";
+            connStatus.textContent = "溫柔單機體驗 (點擊連線)";
+            
+            if (unsubMessages) {
+                try { unsubMessages(); } catch(e) {}
+                unsubMessages = null;
+            }
+            if (unsubTyping) {
+                try { unsubTyping(); } catch(e) {}
+                unsubTyping = null;
+            }
+            
+            if (!localStorage.getItem("offline_messages")) {
+                const initMsgs = [
+                    {
+                        id: "init_1",
+                        sender: "雲朵 ☁️",
+                        senderAvatar: "☁️",
+                        content: "你好呀！歡迎來到這片溫柔的公共空間。不論外面多麼吵雜，這裡都會靜靜地傾聽喔 🌿（輸入『累』、『天氣』、『晚安』或『難過』跟我聊聊看吧！）",
+                        timestamp: Date.now() - 300000,
+                        isRecalled: false,
+                        readBy: []
+                    },
+                    {
+                        id: "init_2",
+                        sender: "小葉 🌿",
+                        senderAvatar: "🌿",
+                        content: "累的時候就躺著看著天空，什麼都不做也沒關係的 😊",
+                        timestamp: Date.now() - 150000,
+                        isRecalled: false,
+                        readBy: []
+                    }
+                ];
+                localStorage.setItem("offline_messages", JSON.stringify(initMsgs));
+            }
+            
+            if (nickname) {
+                allMessages = getLocalMessages();
+                renderMessageUI();
+            }
+        }
+
+        toggleConnectionBtn.addEventListener("click", () => {
+            if (offlineMode) {
+                showToast("正在嘗試為您連線雲端...");
+                offlineMode = false;
+                connDot.className = "w-1.5 h-1.5 bg-[#C5B3A1] rounded-full animate-pulse";
+                connStatus.textContent = "嘗試建立連線...";
+                tryInitializeFirebase().then(() => {
+                    if (!offlineMode) {
+                        showToast("雲端即時連線已開通！✨");
+                        startListening();
+                    }
+                });
+            } else {
+                switchToOfflineMode();
+                showToast("已成功切換至溫柔單機沙盒模式 ☕");
+            }
+        });
+
+        // =======================================================
+        // 🔥【iOS & 行動端 鍵盤防擋邏輯（精準定位與視口適應）】
+        // =======================================================
+        function adjustLayoutForKeyboard() {
+            if (window.innerWidth >= 768) {
+                document.documentElement.style.position = "";
+                document.documentElement.style.overflow = "";
+                document.body.style.position = "";
+                document.body.style.overflow = "";
+                chatContainer.style.position = "";
+                chatContainer.style.left = "";
+                chatContainer.style.top = "";
+                chatContainer.style.width = "";
+                chatContainer.style.height = "";
+                chatContainer.style.borderRadius = "";
+                inputArea.style.paddingBottom = "16px";
+                return;
+            }
+
+            if (!window.visualViewport) return;
+            
+            document.documentElement.style.position = "fixed";
+            document.documentElement.style.overflow = "hidden";
+            document.body.style.position = "fixed";
+            document.body.style.overflow = "hidden";
+
+            const vh = window.visualViewport.height;
+            const vt = window.visualViewport.offsetTop;
+            const windowHeight = window.innerHeight;
+
+            chatContainer.style.position = "fixed";
+            chatContainer.style.left = "0px";
+            chatContainer.style.top = `${vt}px`;
+            chatContainer.style.width = "100%";
+            chatContainer.style.height = `${vh}px`;
+            chatContainer.style.borderRadius = "0px";
+
+            const isKeyboardOpen = (windowHeight - vh) > 120;
+            if (isKeyboardOpen) {
+                inputArea.style.paddingBottom = "28px";
+                setTimeout(() => {
+                    messageBox.scrollTop = messageBox.scrollHeight;
+                }, 50);
+            } else {
+                inputArea.style.paddingBottom = "16px";
+            }
+        }
+
+        const forceScrollReset = () => {
+            if (window.innerWidth < 768) window.scrollTo(0, 0);
+        };
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener("resize", adjustLayoutForKeyboard);
+            window.visualViewport.addEventListener("scroll", adjustLayoutForKeyboard);
+        }
+        window.addEventListener("resize", adjustLayoutForKeyboard);
+
+        messageInput.addEventListener("focus", () => {
+            let count = 0;
+            const interval = setInterval(() => {
+                forceScrollReset();
+                adjustLayoutForKeyboard();
+                if (++count > 5) clearInterval(interval);
+            }, 50);
+        });
+
+        messageInput.addEventListener("blur", () => {
+            setTimeout(() => {
+                adjustLayoutForKeyboard();
+                forceScrollReset();
+            }, 100);
+        });
+
+        // =======================================================
+        // =======================================================
+        function getLocalMessages() {
+            return JSON.parse(localStorage.getItem("offline_messages") || "[]");
+        }
+
+        function saveLocalMessages(msgs) {
+            localStorage.setItem("offline_messages", JSON.stringify(msgs));
+        }
+
+        function triggerCompanionReply(userMsgText = "") {
+            if (!offlineMode) return;
+            
+            const partner = MOCK_PARTNERS[Math.floor(Math.random() * MOCK_PARTNERS.length)];
+            
+            setTimeout(() => {
+                typingText.textContent = `${partner.name} 正在輸入溫柔的話...`;
+                typingIndicator.classList.remove("hidden", "opacity-0", "translate-y-4", "pointer-events-none");
+                typingIndicator.classList.add("opacity-100", "translate-y-0");
+            }, 600);
+
+            setTimeout(() => {
+                typingIndicator.classList.remove("opacity-100", "translate-y-0");
+                typingIndicator.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+                
+                const msgs = getLocalMessages();
+                const responseText = getWarmMockReply(userMsgText);
+                
+                const newMsg = {
+                    id: "mock_" + Date.now(),
+                    sender: partner.name,
+                    senderAvatar: partner.avatar,
+                    content: responseText,
+                    image: "",
+                    timestamp: Date.now(),
+                    isRecalled: false,
+                    readBy: []
+                };
+
+                msgs.push(newMsg);
+                saveLocalMessages(msgs);
+                allMessages = msgs;
+                renderMessageUI();
+                playMessageReceivedSound();
+                showToast(`${partner.name} 傳來了一條溫暖的話語。`);
+            }, 2000);
+        }
+
+        // =======================================================
+        // 🧩【UI 互動與功能處理】
+        // =======================================================
+        const DEFAULT_AVATARS = [
+            { id: "teddy", val: "🧸", bg: "#F5EFEB" },
+            { id: "cat", val: "🐱", bg: "#F8F1EB" },
+            { id: "cloud", val: "☁️", bg: "#EBF1F5" },
+            { id: "leaf", val: "🌿", bg: "#EBF5EB" },
+            { id: "coffee", val: "☕", bg: "#ECE6DF" }
+        ];
+
+        function initAvatarSelector() {
+            defaultAvatarsList.innerHTML = "";
+            DEFAULT_AVATARS.forEach((avatar) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "w-8 h-8 rounded-full border border-[#FAF6F0] flex items-center justify-center text-base cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-100 shadow-sm";
+                btn.style.backgroundColor = avatar.bg;
+                btn.textContent = avatar.val;
+                btn.addEventListener("click", () => setAvatar(avatar.val, false));
+                defaultAvatarsList.appendChild(btn);
+            });
+        }
+
+        function setAvatar(avatarVal, isCustom = false) {
+            currentAvatar = avatarVal;
+            if (isCustom) {
+                selectedAvatarPreview.innerHTML = `<img src="${avatarVal}" class="w-full h-full object-cover rounded-full" />`;
+            } else {
+                selectedAvatarPreview.textContent = avatarVal;
+                const found = DEFAULT_AVATARS.find(a => a.val === avatarVal);
+                selectedAvatarPreview.style.backgroundColor = found ? found.bg : "#FCFAF7";
+            }
+        }
+
+        avatarUploadTrigger.addEventListener("click", () => avatarFileInput.click());
+
+        avatarFileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file || !file.type.startsWith("image/")) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement("canvas");
+                    const DIM = 96;
+                    canvas.width = DIM;
+                    canvas.height = DIM;
+                    const ctx = canvas.getContext("2d");
+                    const size = Math.min(img.width, img.height);
+                    ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, DIM, DIM);
+                    setAvatar(canvas.toDataURL("image/jpeg", 0.7), true);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        loginBtn.addEventListener("click", joinChat);
+        usernameInput.addEventListener("keypress", (e) => { if (e.key === "Enter") joinChat(); });
+
+        async function setTypingStatus(status) {
+            if (offlineMode || !nickname || !db || !auth.currentUser) return;
+            try {
+                // RULE 1: 採用嚴格特定安全路徑
+                const typingRef = window.fb.doc(db, 'artifacts', appId, 'public', 'data', 'typing', nickname);
+                if (status) {
+                    await window.fb.setDoc(typingRef, { sender: nickname, timestamp: Date.now() });
+                } else {
+                    await window.fb.deleteDoc(typingRef);
+                }
+            } catch (error) {
+                console.error("更新打字狀態失敗", error);
+            }
+        }
+
+        messageInput.addEventListener("input", () => {
+            if (!nickname) return;
+            playTypewritingSound();
+
+            if (!isTyping) {
+                isTyping = true;
+                setTypingStatus(true);
+            }
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+                setTypingStatus(false);
+            }, 3000);
+        });
+
+        function showToast(msg) {
+            toastMessage.textContent = msg;
+            toastNotification.classList.remove("translate-y-[-100px]", "opacity-0", "pointer-events-none");
+            toastNotification.classList.add("translate-y-0", "opacity-100");
+            setTimeout(() => {
+                toastNotification.classList.add("translate-y-[-100px]", "opacity-0", "pointer-events-none");
+                toastNotification.classList.remove("translate-y-0", "opacity-100");
+            }, 2500);
+        }
+
+        searchTrigger.addEventListener("click", () => {
+            if (searchBarContainer.classList.contains("hidden")) {
+                searchBarContainer.classList.remove("hidden");
+                setTimeout(() => {
+                    searchBarContainer.classList.remove("-translate-y-4", "opacity-0");
+                    searchBarContainer.classList.add("translate-y-0", "opacity-100");
+                    searchInput.focus();
+                }, 10);
+            } else {
+                hideSearchBar();
+            }
+        });
+
+        searchClose.addEventListener("click", hideSearchBar);
+        function hideSearchBar() {
+            searchInput.value = "";
+            activeFilter = "";
+            searchMatches = [];
+            currentSearchIndex = -1;
+            searchControls.classList.add("hidden");
+            renderMessageUI();
+            searchBarContainer.classList.remove("translate-y-0", "opacity-100");
+            searchBarContainer.classList.add("-translate-y-4", "opacity-0");
+            setTimeout(() => searchBarContainer.classList.add("hidden"), 300);
+        }
+
+        searchInput.addEventListener("input", (e) => {
+            activeFilter = e.target.value.trim().toLowerCase();
+            renderMessageUI();
+
+            if (!activeFilter) {
+                searchMatches = [];
+                currentSearchIndex = -1;
+                searchControls.classList.add("hidden");
+            } else {
+                searchMatches = Array.from(document.querySelectorAll("mark.highlight"));
+                if (searchMatches.length > 0) {
+                    currentSearchIndex = 0;
+                    searchControls.classList.remove("hidden");
+                    updateSearchUI();
+                    scrollToCurrentMatch();
+                } else {
+                    currentSearchIndex = -1;
+                    searchControls.classList.add("hidden");
+                }
+            }
+        });
+
+        function updateSearchUI() {
+            if (searchMatches.length > 0) {
+                searchIndexInfo.textContent = `${currentSearchIndex + 1} / ${searchMatches.length}`;
+            } else {
+                searchIndexInfo.textContent = "0 / 0";
+            }
+        }
+
+        function scrollToCurrentMatch() {
+            if (searchMatches.length === 0 || currentSearchIndex < 0) return;
+            searchMatches.forEach(el => el.classList.remove("current-focus"));
+            const targetMark = searchMatches[currentSearchIndex];
+            targetMark.classList.add("current-focus");
+            targetMark.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+
+        searchPrevBtn.addEventListener("click", () => {
+            if (searchMatches.length === 0) return;
+            currentSearchIndex = (currentSearchIndex === 0) ? searchMatches.length - 1 : currentSearchIndex - 1;
+            updateSearchUI();
+            scrollToCurrentMatch();
+        });
+
+        searchNextBtn.addEventListener("click", () => {
+            if (searchMatches.length === 0) return;
+            currentSearchIndex = (currentSearchIndex === searchMatches.length - 1) ? 0 : currentSearchIndex + 1;
+            updateSearchUI();
+            scrollToCurrentMatch();
+        });
+
+        messageBox.addEventListener("scroll", () => {
+            const threshold = 200;
+            const isScrollUp = messageBox.scrollHeight - messageBox.scrollTop - messageBox.clientHeight > threshold;
+            if (isScrollUp) {
+                scrollToBottomBtn.classList.remove("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+                scrollToBottomBtn.classList.add("opacity-100", "scale-100", "translate-y-0");
+            } else {
+                scrollToBottomBtn.classList.remove("opacity-100", "scale-100", "translate-y-0");
+                scrollToBottomBtn.classList.add("opacity-0", "scale-90", "translate-y-4", "pointer-events-none");
+            }
+        });
+
+        scrollToBottomBtn.addEventListener("click", () => {
+            messageBox.scrollTo({ top: messageBox.scrollHeight, behavior: "smooth" });
+        });
+
+        emojiTrigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (emojiPicker.classList.contains("hidden")) {
+                emojiPicker.classList.remove("hidden");
+                setTimeout(() => {
+                    emojiPicker.classList.remove("opacity-0", "scale-95");
+                    emojiPicker.classList.add("opacity-100", "scale-100");
+                }, 10);
+            } else {
+                closeEmojiPicker();
+            }
+        });
+
+        function closeEmojiPicker() {
+            emojiPicker.classList.remove("opacity-100", "scale-100");
+            emojiPicker.classList.add("opacity-0", "scale-95");
+            setTimeout(() => emojiPicker.classList.add("hidden"), 300);
+        }
+
+        document.querySelectorAll(".emoji-btn").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                messageInput.value += btn.textContent;
+                messageInput.focus();
+                closeEmojiPicker();
+                playTypewritingSound();
+            });
+        });
+
+        document.addEventListener("click", () => {
+            if (!emojiPicker.classList.contains("hidden")) closeEmojiPicker();
+        });
+
+        imageTrigger.addEventListener("click", () => imageInput.click());
+
+        async function handleImageUpload(file) {
+            if (!file || !file.type.startsWith("image/")) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = async function() {
+                    const canvas = document.createElement("canvas");
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    const MAX_DIM = 1000; 
+                    if (width > height) {
+                        if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
+                    } else {
+                        if (height > MAX_DIM) { width *= MAX_DIM / height; height = MAX_DIM; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext("2d");
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const base64Data = canvas.toDataURL("image/jpeg", 0.82); 
+
+                    const replyData = replyToMsg ? {
+                        replyToId: replyToMsg.id,
+                        replyToSender: replyToMsg.sender,
+                        replyToContent: replyToMsg.content || "",
+                        replyToImage: replyToMsg.image || ""
+                    } : {};
+
+                    playMessageSentSound();
+
+                    if (offlineMode || !auth?.currentUser) {
+                        const msgs = getLocalMessages();
+                        const newMsg = {
+                            id: "msg_" + Date.now(),
+                            sender: nickname,
+                            senderAvatar: currentAvatar,
+                            content: "",
+                            image: base64Data,
+                            timestamp: Date.now(),
+                            isRecalled: false,
+                            readBy: [],
+                            ...replyData
+                        };
+                        msgs.push(newMsg);
+                        saveLocalMessages(msgs);
+                        allMessages = msgs;
+                        renderMessageUI();
+                        clearReply();
+                        triggerCompanionReply("[上傳了圖片]");
+                    } else {
+                        // RULE 1: 採用 strict 安全特定的數據路徑
+                        const cloudPromise = window.fb.addDoc(window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'messages'), {
+                            sender: nickname,
+                            senderAvatar: currentAvatar,
+                            content: "",
+                            image: base64Data,
+                            timestamp: Date.now(),
+                            isRecalled: false,
+                            readBy: [],
+                            ...replyData
+                        });
+
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error("Timeout")), 1500)
+                        );
+
+                        try {
+                            await Promise.race([cloudPromise, timeoutPromise]);
+                            imageInput.value = "";
+                            clearReply();
+                        } catch (error) {
+                            console.warn("上傳圖片遭遇阻礙，已自動降級為本地安全模式送出。");
+                            switchToOfflineMode();
+                            
+                            const msgs = getLocalMessages();
+                            const newMsg = {
+                                id: "msg_" + Date.now(),
+                                sender: nickname,
+                                senderAvatar: currentAvatar,
+                                content: "",
+                                image: base64Data,
+                                timestamp: Date.now(),
+                                isRecalled: false,
+                                readBy: [],
+                                ...replyData
+                            };
+                            msgs.push(newMsg);
+                            saveLocalMessages(msgs);
+                            allMessages = msgs;
+                            renderMessageUI();
+                            clearReply();
+                            triggerCompanionReply("[上傳了圖片]");
+                        }
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        imageInput.addEventListener("change", (e) => handleImageUpload(e.target.files[0]));
+        messageInput.addEventListener("paste", (e) => {
+            const items = (e.clipboardData || window.clipboardData).items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf("image") !== -1) {
+                    const file = items[i].getAsFile();
+                    if (file) { e.preventDefault(); handleImageUpload(file); }
+                }
+            }
+        });
+
+        lightbox.addEventListener("click", () => {
+            lightbox.classList.remove("opacity-100");
+            lightboxImg.classList.remove("scale-100");
+            lightboxImg.classList.add("scale-95");
+            setTimeout(() => lightbox.classList.add("hidden"), 300);
+        });
+
+        window.openLightbox = function(src) {
+            lightboxImg.src = src;
+            lightbox.classList.remove("hidden");
+            setTimeout(() => {
+                lightbox.classList.remove("opacity-0", "pointer-events-none");
+                lightboxImg.classList.remove("scale-95");
+                lightboxImg.classList.add("scale-100");
+            }, 10);
+        }
+
+        window.setReplyTo = function(msg) {
+            replyToMsg = msg;
+            replyTargetSender.textContent = `@${msg.sender}`;
+            replyTargetContent.textContent = msg.content || "🖼️ [照片訊息]";
+            replyPreviewBar.classList.remove("hidden");
+            messageInput.focus();
+        }
+
+        function clearReply() {
+            replyToMsg = null;
+            replyPreviewBar.classList.add("hidden");
+        }
+
+        cancelReplyBtn.addEventListener("click", clearReply);
+
+        async function joinChat() {
+            const name = usernameInput.value.trim();
+            if (!name) { showToast("請輸入一個您喜歡的名字！"); return; }
+            nickname = name;
+            localStorage.setItem("chat_nickname", nickname);
+            localStorage.setItem("chat_avatar", currentAvatar);
+            currentUserTag.querySelector("span").textContent = nickname;
+            renderHeaderAvatar();
+            
+            loginContainer.style.opacity = "0";
+            setTimeout(() => {
+                loginContainer.classList.add("hidden");
+                chatContainer.classList.remove("hidden");
+                chatContainer.classList.add("flex");
+                adjustLayoutForKeyboard();
+                startListening();
+            }, 300);
+        }
+
+        function renderHeaderAvatar() {
+            if (currentAvatar.startsWith("data:image")) {
+                headerAvatarBox.innerHTML = `<img src="${currentAvatar}" class="w-full h-full object-cover rounded-full" />`;
+            } else {
+                headerAvatarBox.textContent = currentAvatar;
+                const found = DEFAULT_AVATARS.find(a => a.val === currentAvatar);
+                headerAvatarBox.style.backgroundColor = found ? found.bg : "#FCFAF7";
+            }
+        }
+
+        logoutBtn.addEventListener("click", async () => {
+            await setTypingStatus(false);
+            if (unsubMessages) unsubMessages();
+            if (unsubTyping) unsubTyping();
+            
+            localStorage.removeItem("chat_nickname");
+            localStorage.removeItem("chat_avatar");
+            nickname = "";
+            usernameInput.value = "";
+            setAvatar("🧸", false);
+            clearReply();
+            
+            loginContainer.style.opacity = "1";
+            loginContainer.classList.remove("hidden");
+            chatContainer.classList.add("hidden");
+            chatContainer.classList.remove("flex");
+        });
+
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            const replyData = replyToMsg ? {
+                replyToId: replyToMsg.id,
+                replyToSender: replyToMsg.sender,
+                replyToContent: replyToMsg.content || "",
+                replyToImage: replyToMsg.image || ""
+            } : {};
+
+            playMessageSentSound();
+
+            if (offlineMode || !auth?.currentUser) {
+                const msgs = getLocalMessages();
+                const newMsg = {
+                    id: "msg_" + Date.now(),
+                    sender: nickname,
+                    senderAvatar: currentAvatar,
+                    content: text,
+                    image: "",
+                    timestamp: Date.now(),
+                    isRecalled: false,
+                    readBy: [],
+                    ...replyData
+                };
+                msgs.push(newMsg);
+                saveLocalMessages(msgs);
+                allMessages = msgs;
+                renderMessageUI();
+                messageInput.value = "";
+                clearReply();
+                triggerCompanionReply(text);
+            } else {
+                try {
+                    isTyping = false;
+                    clearTimeout(typingTimeout);
+                    await setTypingStatus(false);
+
+                    // RULE 1: 使用合規特定安全路徑
+                    const cloudSendPromise = window.fb.addDoc(window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'messages'), {
+                        sender: nickname,
+                        senderAvatar: currentAvatar,
+                        content: text,
+                        image: "",
+                        timestamp: Date.now(),
+                        isRecalled: false,
+                        readBy: [],
+                        ...replyData
+                    });
+
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error("Timeout")), 1500)
+                    );
+
+                    await Promise.race([cloudSendPromise, timeoutPromise]);
+                    
+                    messageInput.value = "";
+                    clearReply();
+                } catch (error) {
+                    console.warn("雲端發送超時或失敗，已為您自動無縫使用本地沙盒送出：", error);
+                    switchToOfflineMode();
+                    
+                    const msgs = getLocalMessages();
+                    const newMsg = {
+                        id: "msg_" + Date.now(),
+                        sender: nickname,
+                        senderAvatar: currentAvatar,
+                        content: text,
+                        image: "",
+                        timestamp: Date.now(),
+                        isRecalled: false,
+                        readBy: [],
+                        ...replyData
+                    };
+                    msgs.push(newMsg);
+                    saveLocalMessages(msgs);
+                    allMessages = msgs;
+                    renderMessageUI();
+                    messageInput.value = "";
+                    clearReply();
+                    triggerCompanionReply(text);
+                    showToast("網路異常，已為您自動改用「單機溫柔體驗」囉☕");
+                }
+            }
+        }
+
+        sendBtn.addEventListener("click", sendMessage);
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        window.recallMessage = async function(msgId) {
+            if (offlineMode || !db) {
+                const msgs = getLocalMessages();
+                const found = msgs.find(m => m.id === msgId);
+                if (found) {
+                    found.isRecalled = true;
+                    saveLocalMessages(msgs);
+                    allMessages = msgs;
+                    renderMessageUI();
+                    showToast("訊息已收回 🧸");
+                }
+            } else {
+                try {
+                    // RULE 1: 指定合規安全路徑更新
+                    const docRef = window.fb.doc(db, 'artifacts', appId, 'public', 'data', 'messages', msgId);
+                    await window.fb.updateDoc(docRef, { isRecalled: true });
+                    showToast("訊息已收回 🧸");
+                } catch (err) {
+                    console.error("收回發生異常:", err);
+                    showToast("收回失敗，請稍後再試 ☁️");
+                }
+            }
+        };
+
+        // 點擊引用區平滑滑動導航
+        window.scrollToMessage = function(id) {
+            const el = document.getElementById(`msg-element-${id}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('message-highlight');
+                setTimeout(() => el.classList.remove('message-highlight'), 1800);
+            } else {
+                showToast("找不到原始訊息了 ☁️");
+            }
+        };
+
+        function markMessagesAsRead(messages) {
+            // 本地讀取邏輯
+        }
+
+        function renderMessageUI() {
+            if (!nickname) return;
+            
+            messageBox.innerHTML = "";
+            let filtered = allMessages;
+
+            if (activeFilter) {
+                filtered = allMessages.filter(msg => {
+                    if (msg.isRecalled) return false;
+                    return (msg.content && msg.content.toLowerCase().includes(activeFilter)) || 
+                           (msg.sender && msg.sender.toLowerCase().includes(activeFilter));
+                });
+            }
+
+            if (filtered.length === 0) {
+                messageBox.innerHTML = `
+                    <div class="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-60 h-full">
+                        <div class="w-16 h-16 bg-[#FCFAF7] rounded-full flex items-center justify-center text-2xl mb-3 shadow-inner text-[#C5B3A1]">
+                            <i class="ph-bold ph-feather"></i>
+                        </div>
+                        <p class="text-xs text-[#5C4D3C] font-medium">此刻這裡好安靜...</p>
+                        <p class="text-[10px] text-[#A89C8F] mt-1">傳送一條溫柔的消息，點亮這片夜空吧 ✨</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const isAtBottomBefore = messageBox.scrollHeight - messageBox.scrollTop - messageBox.clientHeight < 150;
+
+            filtered.forEach(msg => {
+                const isMe = msg.sender === nickname;
+                const isRecalled = msg.isRecalled === true;
+
+                const msgDiv = document.createElement("div");
+                msgDiv.id = `msg-element-${msg.id}`;
+                msgDiv.className = `flex gap-3 max-w-[85%] transition-all duration-300 relative group ${isMe ? 'self-end flex-row-reverse' : 'self-start'}`;
+                
+                let avatarHTML = '';
+                if (msg.senderAvatar && msg.senderAvatar.startsWith("data:image")) {
+                    avatarHTML = `<img src="${msg.senderAvatar}" class="w-9 h-9 object-cover rounded-full border border-[#EFEBE4] shrink-0" />`;
+                } else {
+                    avatarHTML = `
+                        <div class="w-9 h-9 rounded-full bg-[#FCFAF7] border border-[#EFEBE4] flex items-center justify-center text-base shadow-sm shrink-0">
+                            ${msg.senderAvatar || '🧸'}
+                        </div>
+                    `;
+                }
+
+                let bubbleContent = '';
+                if (isRecalled) {
+                    bubbleContent = `<div class="text-[11px] text-[#A89C8F] italic py-1 px-2">⚠️ 此訊息已被收回</div>`;
+                } else {
+                    let replyContextHTML = '';
+                    if (msg.replyToId) {
+                        replyContextHTML = `
+                            <div onclick="scrollToMessage('${msg.replyToId}')" class="mb-2 p-2 bg-black/5 hover:bg-black/10 rounded-lg text-[10px] text-[#8C7E70] border-l-2 border-[#C5B3A1] cursor-pointer transition max-w-full truncate">
+                                <span class="font-bold">@${msg.replyToSender}</span>: 
+                                ${msg.replyToContent ? escapeHTML(msg.replyToContent) : '🖼️ [照片]'}
+                            </div>
+                        `;
+                    }
+                    
+                    let textHTML = '';
+                    if (msg.content) {
+                        textHTML = `<p class="text-xs leading-relaxed break-all whitespace-pre-wrap">${highlightText(msg.content, activeFilter)}</p>`;
+                    }
+                    
+                    let imageHTML = '';
+                    if (msg.image) {
+                        imageHTML = `<img src="${msg.image}" onclick="openLightbox('${msg.image}')" class="mt-1.5 max-w-full md:max-w-xs max-h-48 rounded-xl cursor-zoom-in shadow-sm hover:opacity-95 transition" onerror="this.src='https://placehold.co/200x150/fcfaf7/c5b3a1?text=無法載入圖片'" />`;
+                    }
+
+                    const safeSender = (msg.sender || "").replace(/'/g, "\\'").replace(/\n/g, " ");
+                    const safeContent = (msg.content || "").replace(/'/g, "\\'").replace(/\n/g, " ");
+                    const safeImage = msg.image ? "has_image" : "";
+
+                    const actionButtons = `
+                        <div class="absolute -top-3 ${isMe ? 'left-2' : 'right-2'} hidden group-hover:flex items-center gap-1 bg-white border border-[#FAF6F0] rounded-full px-1.5 py-0.5 shadow-md z-20">
+                            <button onclick="setReplyTo({id: '${msg.id}', sender: '${safeSender}', content: '${safeContent}', image: '${safeImage}'})" class="text-[10px] text-[#8C7E70] hover:text-[#5C4D3C] px-1 hover:scale-105" title="回覆">
+                                <i class="ph-bold ph-arrow-u-up-left"></i>
+                            </button>
+                            ${isMe ? `
+                                <button onclick="recallMessage('${msg.id}')" class="text-[10px] text-red-400 hover:text-red-600 px-1 hover:scale-105" title="收回">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+
+                    bubbleContent = `
+                        <div class="relative">
+                            ${replyContextHTML}
+                            ${textHTML}
+                            ${imageHTML}
+                            ${actionButtons}
+                        </div>
+                    `;
+                }
+
+                const bubbleBg = isMe 
+                    ? (isRecalled ? 'bg-[#FCFAF7] border border-[#FAF6F0] text-[#A89C8F]' : 'bg-[#C5B3A1] text-white rounded-[20px] rounded-tr-none px-4 py-3 shadow-[0_4px_12px_rgba(197,179,161,0.15)]') 
+                    : 'bg-white border border-[#FAF6F0] text-[#5C4D3C] rounded-[20px] rounded-tl-none px-4 py-3 shadow-[0_4px_12px_rgba(180,170,160,0.04)]';
+
+                const timestampStr = formatTime(msg.timestamp);
+
+                msgDiv.innerHTML = `
+                    ${avatarHTML}
+                    <div class="flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold text-[#8C7E70]">${msg.sender}</span>
+                            <span class="text-[8px] text-[#A89C8F] font-medium">${timestampStr}</span>
+                        </div>
+                        <div class="${bubbleBg} relative max-w-full">
+                            ${bubbleContent}
+                        </div>
+                    </div>
+                `;
+                
+                messageBox.appendChild(msgDiv);
+            });
+
+            if (isAtBottomBefore) {
+                messageBox.scrollTop = messageBox.scrollHeight;
+            }
+        }
+
+        function startListening() {
+            if (offlineMode || !db) {
+                allMessages = getLocalMessages();
+                renderMessageUI();
+                setTimeout(() => markMessagesAsRead(allMessages), 1000);
+            } else {
+                try {
+                    // RULE 1: 使用安全合規的完整特定路徑
+                    // RULE 2: 不得使用 orderBy、where 或 limit，避免在不具備索引時引發崩潰
+                    const q = window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+
+                    let hasReceivedFirstSnapshot = false;
+                    const connectionTimer = setTimeout(() => {
+                        if (!hasReceivedFirstSnapshot && !offlineMode) {
+                            console.warn("即時通道延遲，切換至沙盒緩衝。");
+                            switchToOfflineMode();
+                        }
+                    }, 3000);
+
+                    unsubMessages = window.fb.onSnapshot(q, (snapshot) => {
+                        hasReceivedFirstSnapshot = true;
+                        clearTimeout(connectionTimer);
+                        
+                        const oldLength = allMessages.length;
+                        const unsorted = [];
+                        
+                        snapshot.forEach((doc) => {
+                            unsorted.push({ id: doc.id, ...doc.data() });
+                        });
+
+                        // 遵照 RULE 2: 在前端瀏覽器記憶體中進行流暢排序，不依赖雲端 orderBy 避免索引異常
+                        unsorted.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                        allMessages = unsorted.slice(-100); // 取得最新 100 筆
+
+                        renderMessageUI();
+                        
+                        // 非本人發送的消息，播放空靈罄聲提示
+                        if (allMessages.length > oldLength && oldLength > 0) {
+                            const latestMsg = allMessages[allMessages.length - 1];
+                            if (latestMsg.sender !== nickname) {
+                                playMessageReceivedSound();
+                            }
+                        }
+
+                        markMessagesAsRead(allMessages);
+                    }, (error) => {
+                        hasReceivedFirstSnapshot = true;
+                        clearTimeout(connectionTimer);
+                        console.error("Firestore 即時訂閱遭遇中斷：", error);
+                        switchToOfflineMode();
+                    });
+
+                    listenForTyping();
+                } catch (e) {
+                    console.error("即時監聽異常", e);
+                    switchToOfflineMode();
+                }
+            }
+        }
+
+        function listenForTyping() {
+            if (offlineMode || !db) return;
+            try {
+                // RULE 1 & 2: 採用指定合規的路徑，且不加載任何複合過濾
+                const typingCol = window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'typing');
+                unsubTyping = window.fb.onSnapshot(typingCol, (snapshot) => {
+                    const typers = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const time = data.timestamp || Date.now();
+                        // 過濾超過 10 秒沒有活動的狀態
+                        if (doc.id !== nickname && (Date.now() - time) < 10000) {
+                            typers.push(doc.id);
+                        }
+                    });
+
+                    if (typers.length > 0) {
+                        typingText.textContent = `${typers.join(', ')} 正在輸入溫柔的話...`;
+                        typingIndicator.classList.remove("hidden", "opacity-0", "translate-y-4", "pointer-events-none");
+                        typingIndicator.classList.add("opacity-100", "translate-y-0");
+                    } else {
+                        typingIndicator.classList.remove("opacity-100", "translate-y-0");
+                        typingIndicator.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+                    }
+                }, (err) => {
+                    console.warn("Typing listener warning", err);
+                });
+            } catch (e) {}
+        }
+
+        // =======================================================
+        // 🚀【初始化啟動】
+        // =======================================================
+        initAvatarSelector();
+        
+        // 1. 先從本地離線緩存加載，秒速載入介面，給予極速體驗
+        offlineMode = true; 
+        switchToOfflineMode(); 
+
+        // 2. 背景非同步向雲端資料庫連線，絕不干擾/阻塞前端 JavaScript 加載
+        tryInitializeFirebase();
+
+        const savedNickname = localStorage.getItem("chat_nickname");
+        const savedAvatar = localStorage.getItem("chat_avatar");
+        if (savedNickname) {
+            nickname = savedNickname;
+            if (savedAvatar) currentAvatar = savedAvatar;
+            currentUserTag.querySelector("span").textContent = nickname;
+            renderHeaderAvatar();
+            loginContainer.classList.add("hidden");
+            chatContainer.classList.remove("hidden");
+            chatContainer.classList.add("flex");
+            adjustLayoutForKeyboard();
+            startListening();
+        }
+
+        window.addEventListener("beforeunload", () => {
+            if (nickname) {
+                setTypingStatus(false);
+            }
+        });
+    </script>
+</body>
+</html>
         }
 
         ::-webkit-scrollbar {
