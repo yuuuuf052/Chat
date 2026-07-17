@@ -15,7 +15,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 修正：電腦端不再使用 position: fixed 鎖死，改用標準滿版配置 */
         html, body {
             width: 100%;
             height: 100%;
@@ -49,7 +48,7 @@
         .dot-bounce:nth-child(3) { animation-delay: 0.4s; }
 
         @keyframes reply-pulse {
-            0 { background-color: rgba(197, 179, 161, 0); }
+            0% { background-color: rgba(197, 179, 161, 0); }
             30% { background-color: rgba(197, 179, 161, 0.25); }
             100% { background-color: rgba(197, 179, 161, 0); }
         }
@@ -104,7 +103,7 @@
         <div class="w-12 h-12 bg-[#FBF9F6] text-[#C5B3A1] rounded-2xl mx-auto flex items-center justify-center text-xl mb-3 shadow-inner">
             <i class="ph-bold ph-sparkle"></i>
         </div>
-        <h2 class="text-lg font-bold text-[#5C4D3C] mb-1 tracking-wide">空間</h2>
+        <h2 class="text-lg font-bold text-[#5C4D3C] mb-1 tracking-wide">溫柔即時空間</h2>
         <p class="text-xs text-[#A89C8F] mb-6 leading-relaxed">微風流淌的角落。給自己一個名字與溫慢頭像，隨時開始對話。</p>
         
         <div class="mb-6 text-left">
@@ -141,15 +140,21 @@
                     <i class="ph-bold ph-planet"></i>
                 </div>
                 <div>
-                    <h3 class="font-bold text-[#5C4D3C] text-xs md:text-sm tracking-wide">快樂空間</h3>
-                    <div class="flex items-center gap-1">
-                        <span class="w-1 h-1 bg-[#C2D3B8] rounded-full animate-pulse"></span>
-                        <span class="text-[9px] text-[#A89C8F]">即時連線中</span>
-                    </div>
+                    <h3 class="font-bold text-[#5C4D3C] text-xs md:text-sm tracking-wide">溫柔即時空間</h3>
+                    <!-- 點擊此處可切換連線狀態 -->
+                    <button id="toggle-connection-btn" class="flex items-center gap-1 focus:outline-none group" title="點擊切換連線模式">
+                        <span id="conn-dot" class="w-1.5 h-1.5 bg-[#C5B3A1] rounded-full animate-pulse"></span>
+                        <span id="conn-status" class="text-[9px] text-[#A89C8F] group-hover:text-[#5C4D3C] underline decoration-dotted transition duration-150">正在載入連線...</span>
+                    </button>
                 </div>
             </div>
             
             <div class="flex items-center gap-1.5">
+                <!-- 療癒音效切換按鈕 -->
+                <button id="audio-toggle-btn" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#C5B3A1] flex items-center justify-center transition duration-200" title="切換療癒音效">
+                    <i id="audio-icon" class="ph-bold ph-speaker-high text-xs"></i>
+                </button>
+
                 <button id="search-trigger" class="w-8 h-8 rounded-full bg-[#FCFAF7] hover:bg-[#FAF6F0] border border-[#FAF6F0] text-[#A89C8F] flex items-center justify-center transition duration-200">
                     <i class="ph-bold ph-magnifying-glass text-xs"></i>
                 </button>
@@ -210,53 +215,23 @@
         <div id="emoji-picker" class="hidden absolute bottom-24 left-4 md:left-6 z-30 bg-white border border-[#FAF6F0] p-3.5 rounded-2xl shadow-[0_12px_36px_rgba(180,170,160,0.12)] max-w-[290px] transition-all duration-300 opacity-0 scale-95 origin-bottom-left">
             <div class="text-[9px] text-[#A89C8F] mb-2 font-medium tracking-wide">挑選溫柔心情：</div>
             <div class="grid grid-cols-7 gap-1.5 text-lg max-h-[220px] overflow-y-auto pr-1">
-                <!-- 臉部表情、手勢、愛心 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😊</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥰</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😍</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😘</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😚</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😋</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😜</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😆</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤣</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😂</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤪</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😎</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😏</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥳</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤔</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫣</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤫</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🙄</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🧐</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤨</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😐</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😅</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥲</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫠</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😬</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🫥</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😲</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🤯</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥺</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😭</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😢</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😓</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😰</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😱</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥱</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😠</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😡</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😤</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😮‍💨</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😴</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😇</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👀</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👍</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">👌</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">✌️</button>
-                <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🙌</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🙏</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">❤️</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">✨</button>
@@ -297,38 +272,190 @@
         </div>
     </div>
 
-    <!-- Firebase 邏輯 -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            query, 
-            orderBy, 
-            limit, 
-            onSnapshot, 
-            serverTimestamp,
-            doc,
-            updateDoc,
-            arrayUnion,
-            setDoc,
-            deleteDoc
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // =======================================================
+        // 🎵【療癒系在地音效合成器 (Web Audio API)】
+        // =======================================================
+        let audioCtx = null;
+        let isAudioMuted = false;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCS9qKnVEYjRzKOXOb3u2gQej1Pc1qJr1c",
-            authDomain: "my-simple-chat-50e3e.firebaseapp.com",
-            projectId: "my-simple-chat-50e3e",
-            storageBucket: "my-simple-chat-50e3e.firebasestorage.app",
-            messagingSenderId: "98528300481",
-            appId: "1:98528300481:web:d816e74665facef2113340",
-            measurementId: "G-CHXE28LVYD"
-        };
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // 收到訊息：528 Hz 奇蹟磬聲（空靈、放鬆）
+        function playMessageReceivedSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                // 主震盪器 (奇蹟頻率 528Hz)
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                // 泛音列 (讓聲音更溫潤有層次)
+                const overtone = audioCtx.createOscillator();
+                const overtoneGain = audioCtx.createGain();
 
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(528, now); // 528Hz
+                
+                overtone.type = 'sine';
+                overtone.frequency.setValueAtTime(1056, now); // 諧音泛音 1056Hz
+
+                // 溫柔的遞減包絡線 (Bell Decay)
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+
+                overtoneGain.gain.setValueAtTime(0, now);
+                overtoneGain.gain.linearRampToValueAtTime(0.04, now + 0.03);
+                overtoneGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+                osc.connect(gain);
+                overtone.connect(overtoneGain);
+                gain.connect(audioCtx.destination);
+                overtoneGain.connect(audioCtx.destination);
+
+                osc.start(now);
+                overtone.start(now);
+                osc.stop(now + 1.6);
+                overtone.stop(now + 0.9);
+            } catch (e) {
+                console.warn("音效啟動受限:", e);
+            }
+        }
+
+        // 送出訊息：柔和的微風掠過聲 (Soft Whoosh)
+        function playMessageSentSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.25);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+                filter.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } catch (e) {}
+        }
+
+        // 打字音效：極輕柔的木質調敲擊 (Typewriter Wood-click)
+        function playTypewritingSound() {
+            if (isAudioMuted) return;
+            initAudio();
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(700, now + 0.03);
+
+                filter.type = 'bandpass';
+                filter.frequency.value = 1000;
+                filter.Q.value = 5;
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.02, now + 0.005);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } catch (e) {}
+        }
+
+        // =======================================================
+        // 💬【本地伴侶與暖心對話庫】
+        // =======================================================
+        const MOCK_PARTNERS = [
+            { name: "喵喵 🐱", avatar: "🐱", bg: "#F8F1EB" },
+            { name: "小葉 🌿", avatar: "🌿", bg: "#EBF5EB" },
+            { name: "雲朵 ☁️", avatar: "☁️", bg: "#EBF1F5" },
+            { name: "拿鐵 ☕", avatar: "☕", bg: "#ECE6DF" }
+        ];
+
+        function getWarmMockReply(userText) {
+            const text = userText.toLowerCase().trim();
+            if (text.includes("你好") || text.includes("哈囉") || text.includes("hi") || text.includes("hello")) {
+                return "你好呀！很高興能在這個溫暖的角落遇見你 ✨ 這裡的空氣很安靜，希望你喜歡。";
+            }
+            if (text.includes("累") || text.includes("辛苦") || text.includes("壓力") || text.includes("煩") || text.includes("忙")) {
+                return "今天辛苦你了 🌿。拍拍肩膀，先把肩上的包裹放下來吧。這裡有暖暖的空間，閉上眼放空一下下。";
+            }
+            if (text.includes("開心") || text.includes("快樂") || text.includes("棒") || text.includes("耶") || text.includes("幸運")) {
+                return "太好了！看到你心情這麼好，我的世界也跟著亮了起來呢 🥰 感謝你把這份寶貴的喜悅帶進來分享！";
+            }
+            if (text.includes("難過") || text.includes("哭") || text.includes("傷心") || text.includes("寂寞") || text.includes("孤單") || text.includes("不開心")) {
+                return "（遞上軟綿綿的抱枕與一杯溫牛奶 🧸）沒關係的，想哭就哭吧。不管外面的風雨有多大，我都一直在這裡陪著你，不走開。";
+            }
+            if (text.includes("天氣") || text.includes("雨") || text.includes("晴") || text.includes("冷") || text.includes("熱")) {
+                return "不論你那裡現在是艷陽高照還是細雨綿綿，都希望你的心裡此時有一道溫柔的微風與陽光 ☁️";
+            }
+            if (text.includes("誰") || text.includes("名字") || text.includes("你叫")) {
+                return "我是默默陪在空中的雲朵與風 ☁️，也是願意安靜聽你傾訴的好朋友。";
+            }
+            if (text.includes("晚晚") || text.includes("晚安") || text.includes("睡")) {
+                return "晚安唷 😴。希望今天晚上的夢境軟綿綿的，像棉花糖一樣甜美。明天又是新的一天，好夢！";
+            }
+            if (text.includes("加油") || text.includes("撐") || text.includes("努力")) {
+                return "加油呀 ✨！雖然有時前方的路有點模糊，但你一步一步走過來的腳印，都是最美最勇敢的證明喔。";
+            }
+            const WARM_RESPONSES = [
+                "聽你這麼說，感覺心裡暖暖的 🌿",
+                "謝謝你願意分享這些，今天辛苦囉，喝杯溫水放鬆一下吧 ☕",
+                "沒關係的，不管發生什麼事，這裡永遠都有個溫柔的角落陪伴你 ☁️",
+                "哇！這個想法真棒，你真的很心思細膩呢 ✨",
+                "不管今天過得怎麼樣，你都已經做得非常好了喔 🧸",
+                "生活雖然有時忙亂，但別忘了給自己留一點溫慢的時光 😊",
+                "看見你的消息真開心，希望此時此刻的你也感到放鬆自在！"
+            ];
+            return WARM_RESPONSES[Math.floor(Math.random() * WARM_RESPONSES.length)];
+        }
+
+        function parseMessageDate(timestamp) {
+            if (!timestamp) return new Date();
+            if (typeof timestamp.toDate === 'function') {
+                return timestamp.toDate();
+            }
+            if (typeof timestamp === 'object' && timestamp.seconds !== undefined) {
+                return new Date(timestamp.seconds * 1000);
+            }
+            const parsed = new Date(timestamp);
+            if (!isNaN(parsed.getTime())) {
+                return parsed;
+            }
+            return new Date();
+        }
+
+        // =======================================================
+        // 🧩【UI 元素與狀態綁定】
+        // =======================================================
         const loginContainer = document.getElementById("login-container");
         const chatContainer = document.getElementById("chat-container");
         const usernameInput = document.getElementById("username-input");
@@ -363,13 +490,19 @@
         const avatarFileInput = document.getElementById("avatar-file-input");
         const selectedAvatarPreview = document.getElementById("selected-avatar-preview");
         const inputArea = document.getElementById("input-area");
+        const connDot = document.getElementById("conn-dot");
+        const connStatus = document.getElementById("conn-status");
+        const toggleConnectionBtn = document.getElementById("toggle-connection-btn");
 
-        // 搜尋控制核心
         const searchControls = document.getElementById("search-controls");
         const searchIndexInfo = document.getElementById("search-index-info");
         const searchPrevBtn = document.getElementById("search-prev-btn");
         const searchNextBtn = document.getElementById("search-next-btn");
 
+        const audioToggleBtn = document.getElementById("audio-toggle-btn");
+        const audioIcon = document.getElementById("audio-icon");
+
+        // 系統狀態
         let nickname = "";
         let currentAvatar = "🧸";
         let allMessages = [];
@@ -377,12 +510,186 @@
         let replyToMsg = null;
         let isTyping = false;
         let typingTimeout = null;
-
         let searchMatches = []; 
         let currentSearchIndex = -1;
+        let offlineMode = false;
+
+        // Firebase 相關引用
+        let db = null;
+        let firebaseApp = null;
+        let unsubMessages = null;
+        let unsubTyping = null;
+
+        // 獲取與配置 App 專屬識別碼
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'gentle-chat-space';
+
+        // 輔助函式：逸出 HTML 避免標籤解析錯誤
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        // 搜尋匹配高亮器
+        function highlightText(text, keyword) {
+            const escaped = escapeHTML(text);
+            if (!keyword) return escaped;
+            const regex = new RegExp(`(${keyword.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')})`, 'gi');
+            return escaped.replace(regex, '<mark class="highlight">$1</mark>');
+        }
+
+        // 格式化輸出時間
+        function formatTime(timestamp) {
+            const date = parseMessageDate(timestamp);
+            const hrs = String(date.getHours()).padStart(2, '0');
+            const mins = String(date.getMinutes()).padStart(2, '0');
+            return `${hrs}:${mins}`;
+        }
+
+        // 音效開關點擊
+        audioToggleBtn.addEventListener("click", () => {
+            initAudio();
+            isAudioMuted = !isAudioMuted;
+            if (isAudioMuted) {
+                audioIcon.className = "ph-bold ph-speaker-slash text-xs text-stone-400";
+                showToast("音效已靜音 🔇");
+            } else {
+                audioIcon.className = "ph-bold ph-speaker-high text-xs text-[#C5B3A1]";
+                showToast("療癒音效已開啟 🎵");
+                playMessageReceivedSound();
+            }
+        });
 
         // =======================================================
-        // 🔥【優化：iOS 鍵盤防擋邏輯（精準區分手機與電腦）】
+        // =======================================================
+        async function tryInitializeFirebase() {
+            // 安全載入預備 Firebase 配置
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+                apiKey: "AIzaSyCS9qKnVEYjRzKOXOb3u2gQej1Pc1qJr1c",
+                authDomain: "my-simple-chat-50e3e.firebaseapp.com",
+                projectId: "my-simple-chat-50e3e",
+                storageBucket: "my-simple-chat-50e3e.firebasestorage.app",
+                messagingSenderId: "98528300481",
+                appId: "1:98528300481:web:d816e74665facef2113340",
+                measurementId: "G-CHXE28LVYD"
+            };
+
+            const initTimeout = setTimeout(() => {
+                if (db === null) {
+                    console.warn("Firebase 載入時間過長，自動導向至安全單機沙盒模式。");
+                    switchToOfflineMode();
+                }
+            }, 3000);
+
+            try {
+                // 動態模組化加載
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+                const { getAuth, signInAnonymously, signInWithCustomToken } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+                const { 
+                    getFirestore, collection, addDoc, query, onSnapshot, doc, updateDoc, setDoc, deleteDoc 
+                } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+                firebaseApp = initializeApp(firebaseConfig);
+                db = getFirestore(firebaseApp);
+                const auth = getAuth(firebaseApp);
+
+                // RULE 3: 必須優先驗證再啟動 Firestore 連動
+                let userCred;
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenErr) {
+                        userCred = await signInAnonymously(auth);
+                    }
+                } else {
+                    userCred = await signInAnonymously(auth);
+                }
+
+                if (userCred && userCred.user) {
+                    offlineMode = false;
+                    window.fb = { collection, addDoc, query, onSnapshot, doc, updateDoc, setDoc, deleteDoc };
+                    
+                    clearTimeout(initTimeout);
+                    connDot.className = "w-1.5 h-1.5 bg-[#C2D3B8] rounded-full animate-pulse";
+                    connStatus.textContent = "雲端即時連線 (點擊切換)";
+                    console.log("Firebase 雲端連線與 Auth 安全驗證成功。");
+
+                    if (nickname) {
+                        startListening();
+                    }
+                } else {
+                    throw new Error("驗證失敗");
+                }
+            } catch (error) {
+                clearTimeout(initTimeout);
+                console.warn("無法建立雲端連線，已自動切換為「單機沙盒溫柔模式」。原因：", error);
+                switchToOfflineMode();
+            }
+        }
+
+        function switchToOfflineMode() {
+            offlineMode = true;
+            connDot.className = "w-1.5 h-1.5 bg-[#E88D67] rounded-full animate-pulse";
+            connStatus.textContent = "溫柔單機體驗 (點擊連線)";
+            
+            if (unsubMessages) {
+                try { unsubMessages(); } catch(e) {}
+                unsubMessages = null;
+            }
+            if (unsubTyping) {
+                try { unsubTyping(); } catch(e) {}
+                unsubTyping = null;
+            }
+            
+            if (!localStorage.getItem("offline_messages")) {
+                const initMsgs = [
+                    {
+                        id: "init_1",
+                        sender: "雲朵 ☁️",
+                        senderAvatar: "☁️",
+                        content: "你好呀！歡迎來到這片溫柔的公共空間。不論外面多麼吵雜，這裡都會靜靜地傾聽喔 🌿（輸入『累』、『天氣』、『晚安』或『難過』跟我聊聊看吧！）",
+                        timestamp: Date.now() - 300000,
+                        isRecalled: false,
+                        readBy: []
+                    },
+                    {
+                        id: "init_2",
+                        sender: "小葉 🌿",
+                        senderAvatar: "🌿",
+                        content: "累的時候就躺著看著天空，什麼都不做也沒關係的 😊",
+                        timestamp: Date.now() - 150000,
+                        isRecalled: false,
+                        readBy: []
+                    }
+                ];
+                localStorage.setItem("offline_messages", JSON.stringify(initMsgs));
+            }
+            
+            if (nickname) {
+                allMessages = getLocalMessages();
+                renderMessageUI();
+            }
+        }
+
+        toggleConnectionBtn.addEventListener("click", () => {
+            if (offlineMode) {
+                showToast("正在嘗試為您連線雲端...");
+                offlineMode = false;
+                connDot.className = "w-1.5 h-1.5 bg-[#C5B3A1] rounded-full animate-pulse";
+                connStatus.textContent = "嘗試建立連線...";
+                tryInitializeFirebase().then(() => {
+                    if (!offlineMode) {
+                        showToast("雲端即時連線已開通！✨");
+                        startListening();
+                    }
+                });
+            } else {
+                switchToOfflineMode();
+                showToast("已成功切換至溫柔單機沙盒模式 ☕");
+            }
+        });
+
+        // =======================================================
+        // 🔥【iOS & 行動端 鍵盤防擋邏輯（精準定位與視口適應）】
         // =======================================================
         function adjustLayoutForKeyboard() {
             if (window.innerWidth >= 768) {
@@ -455,13 +762,57 @@
             }, 100);
         });
 
-        window.addEventListener("scroll", () => {
-            if (document.activeElement === messageInput) {
-                forceScrollReset();
-            }
-        });
         // =======================================================
+        // =======================================================
+        function getLocalMessages() {
+            return JSON.parse(localStorage.getItem("offline_messages") || "[]");
+        }
 
+        function saveLocalMessages(msgs) {
+            localStorage.setItem("offline_messages", JSON.stringify(msgs));
+        }
+
+        function triggerCompanionReply(userMsgText = "") {
+            if (!offlineMode) return;
+            
+            const partner = MOCK_PARTNERS[Math.floor(Math.random() * MOCK_PARTNERS.length)];
+            
+            setTimeout(() => {
+                typingText.textContent = `${partner.name} 正在輸入溫柔的話...`;
+                typingIndicator.classList.remove("hidden", "opacity-0", "translate-y-4", "pointer-events-none");
+                typingIndicator.classList.add("opacity-100", "translate-y-0");
+            }, 600);
+
+            setTimeout(() => {
+                typingIndicator.classList.remove("opacity-100", "translate-y-0");
+                typingIndicator.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+                
+                const msgs = getLocalMessages();
+                const responseText = getWarmMockReply(userMsgText);
+                
+                const newMsg = {
+                    id: "mock_" + Date.now(),
+                    sender: partner.name,
+                    senderAvatar: partner.avatar,
+                    content: responseText,
+                    image: "",
+                    timestamp: Date.now(),
+                    isRecalled: false,
+                    readBy: []
+                };
+
+                msgs.push(newMsg);
+                saveLocalMessages(msgs);
+                allMessages = msgs;
+                renderMessageUI();
+                playMessageReceivedSound();
+                showToast(`${partner.name} 傳來了一條溫暖的話語。`);
+            }, 2000);
+        }
+
+        // =======================================================
+        // 🧩【UI 互動與功能處理】
+        // =======================================================
         const DEFAULT_AVATARS = [
             { id: "teddy", val: "🧸", bg: "#F5EFEB" },
             { id: "cat", val: "🐱", bg: "#F8F1EB" },
@@ -496,31 +847,6 @@
 
         avatarUploadTrigger.addEventListener("click", () => avatarFileInput.click());
 
-        async function setTypingStatus(status) {
-            if (!nickname) return;
-            try {
-                const typingRef = doc(db, "typing", nickname);
-                if (status) {
-                    await setDoc(typingRef, { sender: nickname, timestamp: serverTimestamp() });
-                } else {
-                    await deleteDoc(typingRef);
-                }
-            } catch (error) {}
-        }
-
-        messageInput.addEventListener("input", () => {
-            if (!nickname) return;
-            if (!isTyping) {
-                isTyping = true;
-                setTypingStatus(true);
-            }
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-                setTypingStatus(false);
-            }, 3000);
-        });
-
         avatarFileInput.addEventListener("change", (e) => {
             const file = e.target.files[0];
             if (!file || !file.type.startsWith("image/")) return;
@@ -540,6 +866,37 @@
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+        });
+
+        loginBtn.addEventListener("click", joinChat);
+        usernameInput.addEventListener("keypress", (e) => { if (e.key === "Enter") joinChat(); });
+
+        async function setTypingStatus(status) {
+            if (offlineMode || !nickname || !db) return;
+            try {
+                // RULE 1: 使用合規的特定路徑
+                const typingRef = window.fb.doc(db, 'artifacts', appId, 'public', 'data', 'typing', nickname);
+                if (status) {
+                    await window.fb.setDoc(typingRef, { sender: nickname, timestamp: Date.now() });
+                } else {
+                    await window.fb.deleteDoc(typingRef);
+                }
+            } catch (error) {}
+        }
+
+        messageInput.addEventListener("input", () => {
+            if (!nickname) return;
+            playTypewritingSound();
+
+            if (!isTyping) {
+                isTyping = true;
+                setTypingStatus(true);
+            }
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+                setTypingStatus(false);
+            }, 3000);
         });
 
         function showToast(msg) {
@@ -674,6 +1031,7 @@
                 messageInput.value += btn.textContent;
                 messageInput.focus();
                 closeEmojiPicker();
+                playTypewritingSound();
             });
         });
 
@@ -693,7 +1051,7 @@
                     let width = img.width;
                     let height = img.height;
                     
-                    const MAX_DIM = 1400; 
+                    const MAX_DIM = 1000; 
                     if (width > height) {
                         if (width > MAX_DIM) { height *= MAX_DIM / width; width = MAX_DIM; }
                     } else {
@@ -702,12 +1060,12 @@
                     canvas.width = width;
                     canvas.height = height;
                     const ctx = canvas.getContext("2d");
-                    
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = "high";
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    const base64Data = canvas.toDataURL("image/jpeg", 0.88); 
+                    const base64Data = canvas.toDataURL("image/jpeg", 0.82); 
+
                     const replyData = replyToMsg ? {
                         replyToId: replyToMsg.id,
                         replyToSender: replyToMsg.sender,
@@ -715,21 +1073,71 @@
                         replyToImage: replyToMsg.image || ""
                     } : {};
 
-                    try {
-                        await addDoc(collection(db, "messages"), {
+                    playMessageSentSound();
+
+                    if (offlineMode) {
+                        const msgs = getLocalMessages();
+                        const newMsg = {
+                            id: "msg_" + Date.now(),
                             sender: nickname,
                             senderAvatar: currentAvatar,
                             content: "",
                             image: base64Data,
-                            timestamp: serverTimestamp(),
+                            timestamp: Date.now(),
+                            isRecalled: false,
+                            readBy: [],
+                            ...replyData
+                        };
+                        msgs.push(newMsg);
+                        saveLocalMessages(msgs);
+                        allMessages = msgs;
+                        renderMessageUI();
+                        clearReply();
+                        triggerCompanionReply("[上傳了圖片]");
+                    } else {
+                        // RULE 1: 使用合規的特定路徑
+                        const cloudPromise = window.fb.addDoc(window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'messages'), {
+                            sender: nickname,
+                            senderAvatar: currentAvatar,
+                            content: "",
+                            image: base64Data,
+                            timestamp: Date.now(),
                             isRecalled: false,
                             readBy: [],
                             ...replyData
                         });
-                        imageInput.value = "";
-                        clearReply();
-                    } catch (error) {
-                        showToast("發送失敗，請再試一次");
+
+                        const timeoutPromise = new Promise((_, reject) => 
+                            setTimeout(() => reject(new Error("Timeout")), 1500)
+                        );
+
+                        try {
+                            await Promise.race([cloudPromise, timeoutPromise]);
+                            imageInput.value = "";
+                            clearReply();
+                        } catch (error) {
+                            console.warn("上傳圖片遭遇阻礙，已自動降級為本地安全模式送出。");
+                            switchToOfflineMode();
+                            
+                            const msgs = getLocalMessages();
+                            const newMsg = {
+                                id: "msg_" + Date.now(),
+                                sender: nickname,
+                                senderAvatar: currentAvatar,
+                                content: "",
+                                image: base64Data,
+                                timestamp: Date.now(),
+                                isRecalled: false,
+                                readBy: [],
+                                ...replyData
+                            };
+                            msgs.push(newMsg);
+                            saveLocalMessages(msgs);
+                            allMessages = msgs;
+                            renderMessageUI();
+                            clearReply();
+                            triggerCompanionReply("[上傳了圖片]");
+                        }
                     }
                 };
                 img.src = event.target.result;
@@ -755,7 +1163,7 @@
             setTimeout(() => lightbox.classList.add("hidden"), 300);
         });
 
-        function openLightbox(src) {
+        window.openLightbox = function(src) {
             lightboxImg.src = src;
             lightbox.classList.remove("hidden");
             setTimeout(() => {
@@ -765,23 +1173,7 @@
             }, 10);
         }
 
-        initAvatarSelector();
-
-        const savedNickname = localStorage.getItem("chat_nickname");
-        const savedAvatar = localStorage.getItem("chat_avatar");
-        if (savedNickname) {
-            nickname = savedNickname;
-            if (savedAvatar) currentAvatar = savedAvatar;
-            currentUserTag.querySelector("span").textContent = nickname;
-            renderHeaderAvatar();
-            loginContainer.classList.add("hidden");
-            chatContainer.classList.remove("hidden");
-            chatContainer.classList.add("flex");
-            adjustLayoutForKeyboard();
-            listenForMessages();
-        }
-
-        function setReplyTo(msg) {
+        window.setReplyTo = function(msg) {
             replyToMsg = msg;
             replyTargetSender.textContent = `@${msg.sender}`;
             replyTargetContent.textContent = msg.content || "🖼️ [照片訊息]";
@@ -795,10 +1187,8 @@
         }
 
         cancelReplyBtn.addEventListener("click", clearReply);
-        loginBtn.addEventListener("click", joinChat);
-        usernameInput.addEventListener("keypress", (e) => { if (e.key === "Enter") joinChat(); });
 
-        function joinChat() {
+        async function joinChat() {
             const name = usernameInput.value.trim();
             if (!name) { showToast("請輸入一個您喜歡的名字！"); return; }
             nickname = name;
@@ -806,13 +1196,14 @@
             localStorage.setItem("chat_avatar", currentAvatar);
             currentUserTag.querySelector("span").textContent = nickname;
             renderHeaderAvatar();
+            
             loginContainer.style.opacity = "0";
             setTimeout(() => {
                 loginContainer.classList.add("hidden");
                 chatContainer.classList.remove("hidden");
                 chatContainer.classList.add("flex");
                 adjustLayoutForKeyboard();
-                listenForMessages();
+                startListening();
             }, 300);
         }
 
@@ -828,23 +1219,26 @@
 
         logoutBtn.addEventListener("click", async () => {
             await setTypingStatus(false);
+            if (unsubMessages) unsubMessages();
+            if (unsubTyping) unsubTyping();
+            
             localStorage.removeItem("chat_nickname");
             localStorage.removeItem("chat_avatar");
             nickname = "";
             usernameInput.value = "";
             setAvatar("🧸", false);
             clearReply();
+            
             loginContainer.style.opacity = "1";
             loginContainer.classList.remove("hidden");
             chatContainer.classList.add("hidden");
             chatContainer.classList.remove("flex");
         });
 
-        window.addEventListener("beforeunload", () => { if (nickname) setTypingStatus(false); });
-
         async function sendMessage() {
             const text = messageInput.value.trim();
             if (!text) return;
+
             const replyData = replyToMsg ? {
                 replyToId: replyToMsg.id,
                 replyToSender: replyToMsg.sender,
@@ -852,314 +1246,369 @@
                 replyToImage: replyToMsg.image || ""
             } : {};
 
-            try {
-                isTyping = false;
-                clearTimeout(typingTimeout);
-                await setTypingStatus(false);
-                await addDoc(collection(db, "messages"), {
+            playMessageSentSound();
+
+            if (offlineMode) {
+                const msgs = getLocalMessages();
+                const newMsg = {
+                    id: "msg_" + Date.now(),
                     sender: nickname,
                     senderAvatar: currentAvatar,
                     content: text,
                     image: "",
-                    timestamp: serverTimestamp(),
+                    timestamp: Date.now(),
                     isRecalled: false,
                     readBy: [],
                     ...replyData
-                });
+                };
+                msgs.push(newMsg);
+                saveLocalMessages(msgs);
+                allMessages = msgs;
+                renderMessageUI();
                 messageInput.value = "";
                 clearReply();
-            } catch (error) {
-                console.error("發送失敗原因:", error);
-                showToast("發送失敗，請確認網路或資料庫權限");
+                triggerCompanionReply(text);
+            } else {
+                try {
+                    isTyping = false;
+                    clearTimeout(typingTimeout);
+                    await setTypingStatus(false);
+
+                    // RULE 1: 使用合規特定路徑
+                    const cloudSendPromise = window.fb.addDoc(window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'messages'), {
+                        sender: nickname,
+                        senderAvatar: currentAvatar,
+                        content: text,
+                        image: "",
+                        timestamp: Date.now(),
+                        isRecalled: false,
+                        readBy: [],
+                        ...replyData
+                    });
+
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error("Timeout")), 1500)
+                    );
+
+                    await Promise.race([cloudSendPromise, timeoutPromise]);
+                    
+                    messageInput.value = "";
+                    clearReply();
+                } catch (error) {
+                    console.warn("雲端發送超時或失敗，已為您自動無縫使用本地沙盒送出：", error);
+                    switchToOfflineMode();
+                    
+                    const msgs = getLocalMessages();
+                    const newMsg = {
+                        id: "msg_" + Date.now(),
+                        sender: nickname,
+                        senderAvatar: currentAvatar,
+                        content: text,
+                        image: "",
+                        timestamp: Date.now(),
+                        isRecalled: false,
+                        readBy: [],
+                        ...replyData
+                    };
+                    msgs.push(newMsg);
+                    saveLocalMessages(msgs);
+                    allMessages = msgs;
+                    renderMessageUI();
+                    messageInput.value = "";
+                    clearReply();
+                    triggerCompanionReply(text);
+                    showToast("網路異常，已為您自動改用「單機溫柔體驗」囉☕");
+                }
             }
         }
 
         sendBtn.addEventListener("click", sendMessage);
-        messageInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+        messageInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
 
-        function listenForMessages() {
-            const q = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(100));
-            onSnapshot(q, (snapshot) => {
-                allMessages = [];
-                snapshot.forEach((doc) => {
-                    allMessages.push({ id: doc.id, ...doc.data() });
-                });
-                renderMessageUI();
-                markMessagesAsRead(allMessages);
-                
-                if (activeFilter) {
-                    searchMatches = Array.from(document.querySelectorAll("mark.highlight"));
-                    updateSearchUI();
+        window.recallMessage = async function(msgId) {
+            if (offlineMode) {
+                const msgs = getLocalMessages();
+                const found = msgs.find(m => m.id === msgId);
+                if (found) {
+                    found.isRecalled = true;
+                    saveLocalMessages(msgs);
+                    allMessages = msgs;
+                    renderMessageUI();
+                    showToast("訊息已收回 🧸");
                 }
+            } else {
+                try {
+                    const docRef = window.fb.doc(db, 'artifacts', appId, 'public', 'data', 'messages', msgId);
+                    await window.fb.updateDoc(docRef, { isRecalled: true });
+                    showToast("訊息已收回 🧸");
+                } catch (err) {
+                    console.error("收回發生異常:", err);
+                    showToast("收回失敗，請稍後再試 ☁️");
+                }
+            }
+        };
+
+        // 點擊引用引用區平滑滑動導航
+        window.scrollToMessage = function(id) {
+            const el = document.getElementById(`msg-element-${id}`);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                el.classList.add('message-highlight');
+                setTimeout(() => el.classList.remove('message-highlight'), 1800);
+            } else {
+                showToast("找不到原始訊息了 ☁️");
+            }
+        };
+
+        function markMessagesAsRead(messages) {
+            // 本地讀取邏輯
+        }
+
+        function renderMessageUI() {
+            if (!nickname) return;
+            
+            messageBox.innerHTML = "";
+            let filtered = allMessages;
+
+            if (activeFilter) {
+                filtered = allMessages.filter(msg => {
+                    if (msg.isRecalled) return false;
+                    return (msg.content && msg.content.toLowerCase().includes(activeFilter)) || 
+                           (msg.sender && msg.sender.toLowerCase().includes(activeFilter));
+                });
+            }
+
+            if (filtered.length === 0) {
+                messageBox.innerHTML = `
+                    <div class="flex-1 flex flex-col items-center justify-center text-center p-8 opacity-60 h-full">
+                        <div class="w-16 h-16 bg-[#FCFAF7] rounded-full flex items-center justify-center text-2xl mb-3 shadow-inner text-[#C5B3A1]">
+                            <i class="ph-bold ph-feather"></i>
+                        </div>
+                        <p class="text-xs text-[#5C4D3C] font-medium">此刻這裡好安靜...</p>
+                        <p class="text-[10px] text-[#A89C8F] mt-1">傳送一條溫柔的消息，點亮這片夜空吧 ✨</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const isAtBottomBefore = messageBox.scrollHeight - messageBox.scrollTop - messageBox.clientHeight < 150;
+
+            filtered.forEach(msg => {
+                const isMe = msg.sender === nickname;
+                const isRecalled = msg.isRecalled === true;
+
+                const msgDiv = document.createElement("div");
+                msgDiv.id = `msg-element-${msg.id}`;
+                msgDiv.className = `flex gap-3 max-w-[85%] transition-all duration-300 relative group ${isMe ? 'self-end flex-row-reverse' : 'self-start'}`;
+                
+                let avatarHTML = '';
+                if (msg.senderAvatar && msg.senderAvatar.startsWith("data:image")) {
+                    avatarHTML = `<img src="${msg.senderAvatar}" class="w-9 h-9 object-cover rounded-full border border-[#EFEBE4]" />`;
+                } else {
+                    avatarHTML = `
+                        <div class="w-9 h-9 rounded-full bg-[#FCFAF7] border border-[#EFEBE4] flex items-center justify-center text-base shadow-sm shrink-0">
+                            ${msg.senderAvatar || '🧸'}
+                        </div>
+                    `;
+                }
+
+                let bubbleContent = '';
+                if (isRecalled) {
+                    bubbleContent = `<div class="text-[11px] text-[#A89C8F] italic py-1 px-2">⚠️ 此訊息已被收回</div>`;
+                } else {
+                    let replyContextHTML = '';
+                    if (msg.replyToId) {
+                        replyContextHTML = `
+                            <div onclick="scrollToMessage('${msg.replyToId}')" class="mb-2 p-2 bg-black/5 hover:bg-black/10 rounded-lg text-[10px] text-[#8C7E70] border-l-2 border-[#C5B3A1] cursor-pointer transition max-w-full truncate">
+                                <span class="font-bold">@${msg.replyToSender}</span>: 
+                                ${msg.replyToContent ? escapeHTML(msg.replyToContent) : '🖼️ [照片]'}
+                            </div>
+                        `;
+                    }
+                    
+                    let textHTML = '';
+                    if (msg.content) {
+                        textHTML = `<p class="text-xs leading-relaxed break-all whitespace-pre-wrap">${highlightText(msg.content, activeFilter)}</p>`;
+                    }
+                    
+                    let imageHTML = '';
+                    if (msg.image) {
+                        imageHTML = `<img src="${msg.image}" onclick="openLightbox('${msg.image}')" class="mt-1.5 max-w-full md:max-w-xs max-h-48 rounded-xl cursor-zoom-in shadow-sm hover:opacity-95 transition" onerror="this.src='https://placehold.co/200x150/fcfaf7/c5b3a1?text=無法載入圖片'" />`;
+                    }
+
+                    const safeSender = (msg.sender || "").replace(/'/g, "\\'").replace(/\n/g, " ");
+                    const safeContent = (msg.content || "").replace(/'/g, "\\'").replace(/\n/g, " ");
+                    const safeImage = msg.image ? "has_image" : "";
+
+                    const actionButtons = `
+                        <div class="absolute -top-3 ${isMe ? 'left-2' : 'right-2'} hidden group-hover:flex items-center gap-1 bg-white border border-[#FAF6F0] rounded-full px-1.5 py-0.5 shadow-md z-20">
+                            <button onclick="setReplyTo({id: '${msg.id}', sender: '${safeSender}', content: '${safeContent}', image: '${safeImage}'})" class="text-[10px] text-[#8C7E70] hover:text-[#5C4D3C] px-1 hover:scale-105" title="回覆">
+                                <i class="ph-bold ph-arrow-u-up-left"></i>
+                            </button>
+                            ${isMe ? `
+                                <button onclick="recallMessage('${msg.id}')" class="text-[10px] text-red-400 hover:text-red-600 px-1 hover:scale-105" title="收回">
+                                    <i class="ph-bold ph-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+
+                    bubbleContent = `
+                        <div class="relative">
+                            ${replyContextHTML}
+                            ${textHTML}
+                            ${imageHTML}
+                            ${actionButtons}
+                        </div>
+                    `;
+                }
+
+                const bubbleBg = isMe 
+                    ? (isRecalled ? 'bg-[#FCFAF7] border border-[#FAF6F0] text-[#A89C8F]' : 'bg-[#C5B3A1] text-white rounded-[20px] rounded-tr-none px-4 py-3 shadow-[0_4px_12px_rgba(197,179,161,0.15)]') 
+                    : 'bg-white border border-[#FAF6F0] text-[#5C4D3C] rounded-[20px] rounded-tl-none px-4 py-3 shadow-[0_4px_12px_rgba(180,170,160,0.04)]';
+
+                const timestampStr = formatTime(msg.timestamp);
+
+                msgDiv.innerHTML = `
+                    ${avatarHTML}
+                    <div class="flex flex-col gap-1 ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold text-[#8C7E70]">${msg.sender}</span>
+                            <span class="text-[8px] text-[#A89C8F] font-medium">${timestampStr}</span>
+                        </div>
+                        <div class="${bubbleBg} relative max-w-full">
+                            ${bubbleContent}
+                        </div>
+                    </div>
+                `;
+                
+                messageBox.appendChild(msgDiv);
             });
-            listenForTyping();
+
+            if (isAtBottomBefore) {
+                messageBox.scrollTop = messageBox.scrollHeight;
+            }
+        }
+
+        function startListening() {
+            if (offlineMode) {
+                allMessages = getLocalMessages();
+                renderMessageUI();
+                setTimeout(() => markMessagesAsRead(allMessages), 1000);
+            } else {
+                try {
+                    // RULE 1: 使用合規的特定路徑，RULE 2: 避免複雜 orderBy/limit 鏈
+                    const q = window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'messages');
+
+                    let hasReceivedFirstSnapshot = false;
+                    const connectionTimer = setTimeout(() => {
+                        if (!hasReceivedFirstSnapshot && !offlineMode) {
+                            console.warn("無法即時取得雲端快照，自動導向單機體驗");
+                            switchToOfflineMode();
+                        }
+                    }, 2500);
+
+                    unsubMessages = window.fb.onSnapshot(q, (snapshot) => {
+                        hasReceivedFirstSnapshot = true;
+                        clearTimeout(connectionTimer);
+                        
+                        const oldLength = allMessages.length;
+                        const unsorted = [];
+                        
+                        snapshot.forEach((doc) => {
+                            unsorted.push({ id: doc.id, ...doc.data() });
+                        });
+
+                        // 瀏覽器記憶體端進行安全排序
+                        unsorted.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                        allMessages = unsorted.slice(-100); // 獲取最新 100 筆
+
+                        renderMessageUI();
+                        
+                        if (allMessages.length > oldLength && oldLength > 0) {
+                            const latestMsg = allMessages[allMessages.length - 1];
+                            if (latestMsg.sender !== nickname) {
+                                playMessageReceivedSound();
+                            }
+                        }
+
+                        markMessagesAsRead(allMessages);
+                    }, (error) => {
+                        hasReceivedFirstSnapshot = true;
+                        clearTimeout(connectionTimer);
+                        console.error("Firestore 連線中斷：", error);
+                        switchToOfflineMode();
+                    });
+
+                    listenForTyping();
+                } catch (e) {
+                    switchToOfflineMode();
+                }
+            }
         }
 
         function listenForTyping() {
-            const q = collection(db, "typing");
-            onSnapshot(q, (snapshot) => {
-                const typingUsers = [];
-                const now = Date.now();
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const docTime = data.timestamp ? data.timestamp.toDate().getTime() : now;
-                    if (data.sender !== nickname && (now - docTime < 10000)) {
-                        typingUsers.push(data.sender);
-                    }
-                });
-                if (typingUsers.length > 0) {
-                    typingText.textContent = `${typingUsers.join("、")} 正在輸入中`;
-                    typingIndicator.classList.remove("hidden", "opacity-0", "translate-y-4", "pointer-events-none");
-                    typingIndicator.classList.add("opacity-100", "translate-y-0");
-                } else {
-                    typingIndicator.classList.remove("opacity-100", "translate-y-0");
-                    typingIndicator.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
-                    setTimeout(() => {
-                        if (typingIndicator.classList.contains("opacity-0")) typingIndicator.classList.add("hidden");
-                    }, 300);
-                }
-            });
-        }
-
-        async function markMessagesAsRead(messages) {
-            if (!nickname) return;
-            messages.forEach(async (msg) => {
-                if (msg.sender !== nickname && !msg.isRecalled) {
-                    const readByArray = msg.readBy || [];
-                    if (!readByArray.includes(nickname)) {
-                        try {
-                            await updateDoc(doc(db, "messages", msg.id), { readBy: arrayUnion(nickname) });
-                        } catch (e) {}
-                    }
-                }
-            });
-        }
-
-        async function recallMessage(messageId) {
+            if (offlineMode || !db) return;
             try {
-                await updateDoc(doc(db, "messages", messageId), { isRecalled: true });
-                showToast("訊息已成功收回。");
+                // RULE 1 & RULE 2: 單純拉取無複合過濾
+                const typingCol = window.fb.collection(db, 'artifacts', appId, 'public', 'data', 'typing');
+                unsubTyping = window.fb.onSnapshot(typingCol, (snapshot) => {
+                    const typers = [];
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        const time = data.timestamp || Date.now();
+                        if (doc.id !== nickname && (Date.now() - time) < 10000) {
+                            typers.push(doc.id);
+                        }
+                    });
+
+                    if (typers.length > 0) {
+                        typingText.textContent = `${typers.join(', ')} 正在輸入溫柔的話...`;
+                        typingIndicator.classList.remove("hidden", "opacity-0", "translate-y-4", "pointer-events-none");
+                        typingIndicator.classList.add("opacity-100", "translate-y-0");
+                    } else {
+                        typingIndicator.classList.remove("opacity-100", "translate-y-0");
+                        typingIndicator.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+                    }
+                }, (err) => {
+                    console.warn("Typing listener warning", err);
+                });
             } catch (e) {}
         }
 
         // =======================================================
-        // 📅【新增：日期友好轉換小工具】
+        // 🚀【初始化啟動】
         // =======================================================
-        function getFriendlyDateString(date) {
-            const today = new Date();
-            
-            // 消除時分秒，精準對比日期天數
-            const dDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-            const dToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-            
-            // 計算相差的毫秒數並轉化為天數差
-            const diffTime = dToday.getTime() - dDate.getTime();
-            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        initAvatarSelector();
+        
+        // 1. 將單機離線模式設為預設起點，確保加載流暢
+        offlineMode = true; 
+        switchToOfflineMode(); 
 
-            if (diffDays === 0) {
-                return "今天";
-            } else if (diffDays === 1) {
-                return "昨天";
-            } else if (diffDays === 2) {
-                return "前天";
-            } else {
-                // 更早的日期直接顯示年月日
-                return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-            }
+        // 2. 背景非同步連線雲端
+        tryInitializeFirebase();
+
+        const savedNickname = localStorage.getItem("chat_nickname");
+        const savedAvatar = localStorage.getItem("chat_avatar");
+        if (savedNickname) {
+            nickname = savedNickname;
+            if (savedAvatar) currentAvatar = savedAvatar;
+            currentUserTag.querySelector("span").textContent = nickname;
+            renderHeaderAvatar();
+            loginContainer.classList.add("hidden");
+            chatContainer.classList.remove("hidden");
+            chatContainer.classList.add("flex");
+            adjustLayoutForKeyboard();
+            startListening();
         }
-        // =======================================================
 
-        function renderMessageUI() {
-            messageBox.innerHTML = "";
-            const displayedMessages = allMessages;
-            
-            let lastMessageDateStr = ""; // 用來追蹤上一條訊息的日期字串
-
-            displayedMessages.forEach((msg) => {
-                const isSelf = msg.sender === nickname;
-                const isRecalled = msg.isRecalled === true;
-
-                // ---------------------------------------------------
-                // 📅 日期分割線邏輯
-                // ---------------------------------------------------
-                if (msg.timestamp) {
-                    const msgDate = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
-                    const currentFriendlyDateStr = getFriendlyDateString(msgDate);
-                    
-                    // 如果這條訊息的日期字串跟上一條不同，就塞入一個置中分割線
-                    if (currentFriendlyDateStr !== lastMessageDateStr) {
-                        const dateDivider = document.createElement("div");
-                        dateDivider.className = "flex justify-center my-4 w-full select-none";
-                        dateDivider.innerHTML = `
-                            <div class="px-4 py-1.5 bg-[#FAF6F0] rounded-full text-[10px] text-[#A89C8F] font-semibold tracking-wider shadow-sm border border-[#FAF6F0]/50">
-                                ${currentFriendlyDateStr}
-                            </div>
-                        `;
-                        messageBox.appendChild(dateDivider);
-                        lastMessageDateStr = currentFriendlyDateStr; // 更新日期標記
-                    }
-                }
-
-                const wrapper = document.createElement("div");
-                wrapper.className = `flex w-full items-start gap-3 ${isSelf ? 'justify-end' : 'justify-start'}`;
-                wrapper.id = `msg-${msg.id}`;
-
-                const avatarEl = document.createElement("div");
-                avatarEl.className = "w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0 border border-[#FAF6F0] text-sm";
-                const senderAvatar = msg.senderAvatar || "🧸";
-                if (senderAvatar.startsWith("data:image")) {
-                    avatarEl.innerHTML = `<img src="${senderAvatar}" class="w-full h-full object-cover" />`;
-                } else {
-                    avatarEl.textContent = senderAvatar;
-                    const found = DEFAULT_AVATARS.find(a => a.val === senderAvatar);
-                    avatarEl.style.backgroundColor = found ? found.bg : "#FCFAF7";
-                }
-
-                const bubbleCol = document.createElement("div");
-                bubbleCol.className = `flex flex-col max-w-[86%] ${isSelf ? 'items-end' : 'items-start'} group relative`;
-
-                const nameLabel = document.createElement("div");
-                nameLabel.className = "text-[9px] text-[#A89C8F] mb-0.5 px-2 font-medium flex items-center gap-1.5";
-                let displayName = msg.sender;
-                if (activeFilter && msg.sender.toLowerCase().includes(activeFilter)) {
-                    displayName = displayName.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="highlight">$1</mark>`);
-                    nameLabel.innerHTML = displayName;
-                } else {
-                    nameLabel.textContent = displayName;
-                }
-
-                if (!isRecalled) {
-                    const replyActionBtn = document.createElement("button");
-                    replyActionBtn.className = "text-[#C5B3A1] hover:text-[#B7A491] ml-1 text-[9px] transition opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer flex items-center gap-0.5";
-                    replyActionBtn.innerHTML = `<i class="ph ph-chat-text"></i> 回覆`;
-                    replyActionBtn.addEventListener("click", (e) => { e.stopPropagation(); setReplyTo(msg); });
-                    nameLabel.appendChild(replyActionBtn);
-                }
-
-                if (isSelf && !isRecalled) {
-                    const recallBtn = document.createElement("button");
-                    recallBtn.className = "text-[#C5B3A1] hover:text-[#B7A491] ml-1 text-[9px] transition opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none cursor-pointer flex items-center gap-0.5";
-                    recallBtn.innerHTML = `<i class="ph ph-arrow-u-up-left"></i> 收回`;
-                    recallBtn.addEventListener("click", (e) => { e.stopPropagation(); recallMessage(msg.id); });
-                    nameLabel.appendChild(recallBtn);
-                }
-
-                let replyToWrapper = null;
-                if (msg.replyToId && !isRecalled) {
-                    replyToWrapper = document.createElement("div");
-                    replyToWrapper.className = "mb-1.5 p-2 pl-2.5 border-l-2 border-[#C5B3A1] bg-black/[0.02] rounded-r-xl text-[10px] text-[#8C7E70] cursor-pointer hover:bg-black/[0.04] transition duration-150 flex flex-col gap-0.5 max-w-full select-none";
-                    const replyHeader = document.createElement("div");
-                    replyHeader.className = "font-bold text-[#C5B3A1] flex items-center gap-1 text-[9px] tracking-wide";
-                    replyHeader.innerHTML = `<i class="ph ph-arrow-bend-up-left text-[10px]"></i> 回覆 @${msg.replyToSender}`;
-                    replyToWrapper.appendChild(replyHeader);
-
-                    const replyBody = document.createElement("div");
-                    replyBody.className = "truncate max-w-[200px] text-[#A89C8F]";
-                    const originalMsgObj = allMessages.find(m => m.id === msg.replyToId);
-                    if (originalMsgObj && originalMsgObj.isRecalled) {
-                        replyBody.textContent = "原訊息已被收回";
-                        replyBody.className = "italic text-stone-400";
-                    } else if (msg.replyToImage) {
-                        replyBody.textContent = "🖼️ 照片預覽";
-                    } else {
-                        replyBody.textContent = msg.replyToContent || "";
-                    }
-                    replyToWrapper.appendChild(replyBody);
-
-                    replyToWrapper.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const targetEl = document.getElementById(`msg-${msg.replyToId}`);
-                        if (targetEl) {
-                            targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            targetEl.classList.add("message-highlight");
-                            setTimeout(() => targetEl.classList.remove("message-highlight"), 1800);
-                        } else {
-                            showToast("找不到原始訊息，可能已被收回！");
-                        }
-                    });
-                }
-
-                const textBubble = document.createElement("div");
-                if (isRecalled) {
-                    textBubble.className = "px-[18px] py-[10px] rounded-[24px] text-xs leading-relaxed border italic text-stone-400/80 bg-stone-100/40 border-stone-200";
-                    textBubble.innerHTML = `<i class="ph ph-warning-circle inline mr-1 text-sm"></i>訊息已收回`;
-                } else if (msg.image) {
-                    textBubble.className = `p-1 rounded-[24px] shadow-[0_2px_12px_rgba(180,170,160,0.01)] border overflow-hidden max-w-full ${isSelf ? 'bg-[#F3ECE3] border-[#FAF6F0]' : 'bg-[#FBF9F6] border-[#FAF6F0]'}`;
-                    if (replyToWrapper) { replyToWrapper.classList.add("mx-2", "mt-2"); textBubble.appendChild(replyToWrapper); }
-                    const imgEl = document.createElement("img");
-                    imgEl.src = msg.image;
-                    imgEl.className = "rounded-[20px] max-w-full max-h-[160px] object-cover cursor-zoom-in";
-                    imgEl.addEventListener("click", () => openLightbox(msg.image));
-                    textBubble.appendChild(imgEl);
-                } else {
-                    textBubble.className = `px-[18px] py-[10px] rounded-[24px] text-xs md:text-sm leading-relaxed break-words whitespace-pre-wrap shadow-[0_2px_12px_rgba(180,170,160,0.01)] border ${isSelf ? 'bg-[#F3ECE3] text-[#5C4D3C] border-[#FAF6F0]' : 'bg-[#FBF9F6] text-[#5C4D3C] border-[#FAF6F0]'}`;
-                    if (replyToWrapper) textBubble.appendChild(replyToWrapper);
-                    const textContentSpan = document.createElement("span");
-                    let displayContent = msg.content || "";
-                    
-                    if (activeFilter && displayContent.toLowerCase().includes(activeFilter)) {
-                        displayContent = displayContent.replace(new RegExp(`(${activeFilter})`, 'gi'), `<mark class="highlight">$1</mark>`);
-                        textContentSpan.innerHTML = displayContent;
-                    } else {
-                        textContentSpan.textContent = displayContent;
-                    }
-                    textBubble.appendChild(textContentSpan);
-                }
-
-                const bubbleContainer = document.createElement("div");
-                bubbleContainer.className = `flex items-end gap-1.5 max-w-full ${isSelf ? 'flex-row-reverse' : 'flex-row'}`;
-
-                const timeText = document.createElement("span");
-                timeText.className = "text-[9px] text-[#A89C8F]/60 select-none mb-1 shrink-0 font-medium";
-                let timeStr = "剛剛";
-                if (msg.timestamp) {
-                    const date = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
-                    timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-                }
-                timeText.textContent = timeStr;
-
-                let statusText = null;
-                if (isSelf && !isRecalled) {
-                    statusText = document.createElement("span");
-                    statusText.className = "text-[9px] text-[#A89C8F]/50 select-none mb-1 shrink-0 font-medium";
-                    const readByArray = msg.readBy || [];
-                    const readers = readByArray.filter(u => u !== nickname);
-                    if (readers.length > 0) {
-                        statusText.textContent = `已讀 ${readers.length > 1 ? readers.length : ''}`;
-                        statusText.className = "text-[9px] text-[#C2D3B8] select-none mb-1 shrink-0 font-semibold";
-                    } else {
-                        statusText.textContent = "未讀";
-                    }
-                }
-
-                if (isSelf) {
-                    bubbleContainer.appendChild(textBubble);
-                    bubbleContainer.appendChild(timeText);
-                    if (statusText) bubbleContainer.appendChild(statusText);
-                } else {
-                    bubbleContainer.appendChild(textBubble);
-                    bubbleContainer.appendChild(timeText);
-                }
-
-                bubbleCol.appendChild(nameLabel);
-                bubbleCol.appendChild(bubbleContainer);
-
-                if (isSelf) {
-                    wrapper.appendChild(bubbleCol);
-                    wrapper.appendChild(avatarEl);
-                } else {
-                    wrapper.appendChild(avatarEl);
-                    wrapper.appendChild(bubbleCol);
-                }
-                messageBox.appendChild(wrapper);
-            });
-
-            if (!activeFilter) {
-                setTimeout(() => {
-                    messageBox.scrollTo({ top: messageBox.scrollHeight, behavior: 'smooth' });
-                }, 50);
+        window.addEventListener("beforeunload", () => {
+            if (nickname) {
+                setTypingStatus(false);
             }
-        }
+        });
     </script>
 </body>
 </html>
