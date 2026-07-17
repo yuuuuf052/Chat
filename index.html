@@ -15,7 +15,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         
-        /* 修正：電腦端不再使用 position: fixed 鎖死，改用標準滿版配置 */
         html, body {
             width: 100%;
             height: 100%;
@@ -171,7 +170,7 @@
                 <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[#C5B3A1] text-xs"></i>
                 <input type="text" id="search-input" class="w-full pl-8 pr-28 py-2 bg-white border border-[#FAF6F0] rounded-xl text-base md:text-xs text-[#5C4D3C] placeholder-[#C5B3A1] focus:outline-none focus:border-[#C5B3A1] transition duration-200" placeholder="搜尋對話關鍵字..." autocomplete="off">
                 
-                <!-- 搜尋控制控制區（筆數提示 + 上下箭頭） -->
+                <!-- 搜尋控制控制區 -->
                 <div id="search-controls" class="hidden absolute right-2 flex items-center gap-1 bg-[#FCFAF7] py-0.5 px-1.5 rounded-lg border border-[#FAF6F0]">
                     <span id="search-index-info" class="text-[9px] text-[#A89C8F] font-semibold tracking-wider px-1">0 / 0</span>
                     <div class="w-[1px] h-2.5 bg-[#EFEBE4]"></div>
@@ -210,7 +209,6 @@
         <div id="emoji-picker" class="hidden absolute bottom-24 left-4 md:left-6 z-30 bg-white border border-[#FAF6F0] p-3.5 rounded-2xl shadow-[0_12px_36px_rgba(180,170,160,0.12)] max-w-[290px] transition-all duration-300 opacity-0 scale-95 origin-bottom-left">
             <div class="text-[9px] text-[#A89C8F] mb-2 font-medium tracking-wide">挑選溫柔心情：</div>
             <div class="grid grid-cols-7 gap-1.5 text-lg max-h-[220px] overflow-y-auto pr-1">
-                <!-- 臉部表情、手勢、愛心 -->
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😊</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">🥰</button>
                 <button class="emoji-btn hover:bg-[#FCFAF7] p-1 rounded-lg transition active:scale-90">😍</button>
@@ -364,7 +362,6 @@
         const selectedAvatarPreview = document.getElementById("selected-avatar-preview");
         const inputArea = document.getElementById("input-area");
 
-        // 搜尋控制核心
         const searchControls = document.getElementById("search-controls");
         const searchIndexInfo = document.getElementById("search-index-info");
         const searchPrevBtn = document.getElementById("search-prev-btn");
@@ -382,83 +379,35 @@
         let currentSearchIndex = -1;
 
         // =======================================================
-        // 🔥【優化：iOS 鍵盤防擋邏輯（精準區分手機與電腦）】
+        // 🌾【溫和穩定的視窗與鍵盤自適應邏輯】
         // =======================================================
         function adjustLayoutForKeyboard() {
             if (window.innerWidth >= 768) {
-                document.documentElement.style.position = "";
-                document.documentElement.style.overflow = "";
-                document.body.style.position = "";
-                document.body.style.overflow = "";
-                chatContainer.style.position = "";
-                chatContainer.style.left = "";
-                chatContainer.style.top = "";
-                chatContainer.style.width = "";
-                chatContainer.style.height = "";
-                chatContainer.style.borderRadius = "";
-                inputArea.style.paddingBottom = "16px";
+                chatContainer.style.height = "85vh";
                 return;
             }
-
-            if (!window.visualViewport) return;
-            
-            document.documentElement.style.position = "fixed";
-            document.documentElement.style.overflow = "hidden";
-            document.body.style.position = "fixed";
-            document.body.style.overflow = "hidden";
-
-            const vh = window.visualViewport.height;
-            const vt = window.visualViewport.offsetTop;
-            const windowHeight = window.innerHeight;
-
-            chatContainer.style.position = "fixed";
-            chatContainer.style.left = "0px";
-            chatContainer.style.top = `${vt}px`;
-            chatContainer.style.width = "100%";
-            chatContainer.style.height = `${vh}px`;
-            chatContainer.style.borderRadius = "0px";
-
-            const isKeyboardOpen = (windowHeight - vh) > 120;
-            if (isKeyboardOpen) {
-                inputArea.style.paddingBottom = "28px";
-                setTimeout(() => {
-                    messageBox.scrollTop = messageBox.scrollHeight;
-                }, 50);
-            } else {
-                inputArea.style.paddingBottom = "16px";
+            if (window.visualViewport) {
+                const vh = window.visualViewport.height;
+                chatContainer.style.height = `${vh}px`;
+                if (document.activeElement === messageInput) {
+                    setTimeout(() => {
+                        messageBox.scrollTop = messageBox.scrollHeight;
+                    }, 80);
+                }
             }
         }
 
-        const forceScrollReset = () => {
-            if (window.innerWidth < 768) window.scrollTo(0, 0);
-        };
-
         if (window.visualViewport) {
             window.visualViewport.addEventListener("resize", adjustLayoutForKeyboard);
-            window.visualViewport.addEventListener("scroll", adjustLayoutForKeyboard);
         }
         window.addEventListener("resize", adjustLayoutForKeyboard);
 
         messageInput.addEventListener("focus", () => {
-            let count = 0;
-            const interval = setInterval(() => {
-                forceScrollReset();
-                adjustLayoutForKeyboard();
-                if (++count > 5) clearInterval(interval);
-            }, 50);
+            setTimeout(adjustLayoutForKeyboard, 100);
         });
 
         messageInput.addEventListener("blur", () => {
-            setTimeout(() => {
-                adjustLayoutForKeyboard();
-                forceScrollReset();
-            }, 100);
-        });
-
-        window.addEventListener("scroll", () => {
-            if (document.activeElement === messageInput) {
-                forceScrollReset();
-            }
+            setTimeout(adjustLayoutForKeyboard, 100);
         });
         // =======================================================
 
@@ -729,7 +678,8 @@
                         imageInput.value = "";
                         clearReply();
                     } catch (error) {
-                        showToast("發送失敗，請再試一次");
+                        console.error("圖片發送失敗：", error);
+                        alert("圖片傳送失敗！錯誤：\n" + error.message);
                     }
                 };
                 img.src = event.target.result;
@@ -842,6 +792,9 @@
 
         window.addEventListener("beforeunload", () => { if (nickname) setTypingStatus(false); });
 
+        // =======================================================
+        // 🛠️【強化與診斷：訊息發送邏輯】
+        // =======================================================
         async function sendMessage() {
             const text = messageInput.value.trim();
             if (!text) return;
@@ -856,6 +809,9 @@
                 isTyping = false;
                 clearTimeout(typingTimeout);
                 await setTypingStatus(false);
+                
+                console.log("嘗試寫入資料庫，內容為：", text);
+
                 await addDoc(collection(db, "messages"), {
                     sender: nickname,
                     senderAvatar: currentAvatar,
@@ -866,13 +822,33 @@
                     readBy: [],
                     ...replyData
                 });
+                
+                console.log("資料寫入成功！");
                 messageInput.value = "";
                 clearReply();
-            } catch (error) {}
+            } catch (error) {
+                console.error("發送失敗，詳細錯誤回報：", error);
+                alert("發送失敗！系統診斷：\n" + error.message + "\n\n💡 請檢查您的 Firebase 控制台 Database Rules 規則是否已到期關閉。");
+            }
         }
 
-        sendBtn.addEventListener("click", sendMessage);
-        messageInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+        // 同時支援點擊事件與觸控事件，確保在行動端不失焦、不被事件穿透
+        sendBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+        sendBtn.addEventListener("touchend", (e) => {
+            e.preventDefault();
+            sendMessage();
+        });
+
+        messageInput.addEventListener("keypress", (e) => { 
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendMessage(); 
+            }
+        });
+        // =======================================================
 
         function listenForMessages() {
             const q = query(collection(db, "messages"), orderBy("timestamp", "asc"), limit(100));
@@ -939,17 +915,11 @@
             } catch (e) {}
         }
 
-        // =======================================================
-        // 📅【新增：日期友好轉換小工具】
-        // =======================================================
         function getFriendlyDateString(date) {
             const today = new Date();
-            
-            // 消除時分秒，精準對比日期天數
             const dDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
             const dToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             
-            // 計算相差的毫秒數並轉化為天數差
             const diffTime = dToday.getTime() - dDate.getTime();
             const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
@@ -960,30 +930,23 @@
             } else if (diffDays === 2) {
                 return "前天";
             } else {
-                // 更早的日期直接顯示年月日
                 return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
             }
         }
-        // =======================================================
 
         function renderMessageUI() {
             messageBox.innerHTML = "";
             const displayedMessages = allMessages;
-            
-            let lastMessageDateStr = ""; // 用來追蹤上一條訊息的日期字串
+            let lastMessageDateStr = ""; 
 
             displayedMessages.forEach((msg) => {
                 const isSelf = msg.sender === nickname;
                 const isRecalled = msg.isRecalled === true;
 
-                // ---------------------------------------------------
-                // 📅 日期分割線邏輯
-                // ---------------------------------------------------
                 if (msg.timestamp) {
                     const msgDate = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
                     const currentFriendlyDateStr = getFriendlyDateString(msgDate);
                     
-                    // 如果這條訊息的日期字串跟上一條不同，就塞入一個置中分割線
                     if (currentFriendlyDateStr !== lastMessageDateStr) {
                         const dateDivider = document.createElement("div");
                         dateDivider.className = "flex justify-center my-4 w-full select-none";
@@ -993,7 +956,7 @@
                             </div>
                         `;
                         messageBox.appendChild(dateDivider);
-                        lastMessageDateStr = currentFriendlyDateStr; // 更新日期標記
+                        lastMessageDateStr = currentFriendlyDateStr; 
                     }
                 }
 
@@ -1153,7 +1116,7 @@
 
             if (!activeFilter) {
                 setTimeout(() => {
-                    messageBox.scrollTo({ top: messageBox.scrollHeight, behavior: 'smooth' });
+                    messageBox.scrollTop = messageBox.scrollHeight;
                 }, 50);
             }
         }
