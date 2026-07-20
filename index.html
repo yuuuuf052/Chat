@@ -505,6 +505,10 @@
             const savedUser = localStorage.getItem('gentle_chat_user');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
+                // 核心修改：強制將 ID 設為名字，確保多裝置與舊用戶直接統一識別
+                currentUser.id = currentUser.name;
+                localStorage.setItem('gentle_chat_user', JSON.stringify(currentUser));
+
                 usernameInput.value = currentUser.name;
                 selectedAvatarPreview.innerHTML = currentUser.avatar.startsWith('data:') 
                     ? `<img src="${currentUser.avatar}" class="w-full h-full object-cover">` 
@@ -516,7 +520,7 @@
                 // 已有使用者，隱藏設定 Modal
                 welcomeModal.classList.add('hidden');
             } else {
-                currentUser.id = generateUID();
+                currentUser.id = '';
                 welcomeModal.classList.remove('hidden');
             }
         }
@@ -762,7 +766,8 @@
             const typingUsers = [];
 
             Object.keys(presences).forEach(uid => {
-                if (uid !== currentUser.id) {
+                // 核心修改：排除自己（直接以當前名稱比對，避免同名使用者在多裝置上看到自己打字中）
+                if (uid !== currentUser.name) {
                     const pres = presences[uid];
                     if (pres.typing && (now - (pres.timestamp || 0)) < 5000) {
                         typingUsers.push(pres.name || '神祕筆友');
@@ -778,7 +783,6 @@
             }
         }
 
-        // --- STREAMING_CHUNK: Styling the message bubbles for phone adaptivity... -->
         // --- 核心：渲染對話訊息清單 (圓弧框, max-w-[86%] 寬度, 手機美觀自適應) ---
         function renderMessages(messagesToRender) {
             const searchTerm = searchInput.value.trim().toLowerCase();
@@ -808,7 +812,8 @@
             let lastDateLabel = "";
 
             finalMessages.forEach((msg) => {
-                const isMe = msg.senderId === currentUser.id;
+                // 核心修改：只要發送者名稱與當前使用者名稱相同，即判定為「我自己」
+                const isMe = msg.senderName === currentUser.name;
                 
                 // 格式化日期分組
                 const msgDate = new Date(msg.timestamp || Date.now());
@@ -912,7 +917,7 @@
                     };
                     actionMenu.appendChild(replyBtn);
 
-                    // 收回按鈕 (僅作者可收回)
+                    // 收回按鈕 (只要名字一樣，不論在哪個裝置，都判定有權限收回)
                     if (isMe) {
                         const recallBtn = document.createElement('button');
                         recallBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
@@ -1195,6 +1200,7 @@
                 return;
             }
             currentUser.name = enteredName;
+            currentUser.id = enteredName; // 核心修改：將 ID 設為使用者名稱，多裝置完全視為同一人
             
             localStorage.setItem('gentle_chat_user', JSON.stringify(currentUser));
             welcomeModal.classList.add('hidden');
@@ -1219,6 +1225,7 @@
             const nameChanged = settingsNameInput.value.trim();
             if (nameChanged && nameChanged !== currentUser.name) {
                 currentUser.name = nameChanged;
+                currentUser.id = nameChanged; // 核心修改：ID 同步為名稱
                 localStorage.setItem('gentle_chat_user', JSON.stringify(currentUser));
                 showToast("名稱修改成功");
                 renderMessages(isFirebaseConnected ? [] : localMessages);
